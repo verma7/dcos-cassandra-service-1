@@ -245,7 +245,7 @@ public class CassandraDaemonProcess {
                         .getPath()).toAbsolutePath().toString())
                 .setListenAddress(getListenAddress())
                 .setRpcAddress(getListenAddress())
-                .build().writeDaemonConfiguration(paths.cassandraConfig());
+                .build().writeDaemonConfiguration(paths.conf());
 
         if(metricsEnabled) {
             metricsEnabled = MetricsConfig.writeMetricsConfig(
