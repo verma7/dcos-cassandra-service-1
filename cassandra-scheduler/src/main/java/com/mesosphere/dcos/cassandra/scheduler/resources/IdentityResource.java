@@ -14,17 +14,16 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 public class IdentityResource {
 
-    private final IdentityManager manager;
+  private final IdentityManager manager;
 
-    @Inject
-    public IdentityResource(final IdentityManager manager) {
-        this.manager = manager;
-    }
+  @Inject
+  public IdentityResource(final IdentityManager manager) {
+    this.manager = manager;
+  }
 
-    @GET
-    @Counted
-    public Identity getIdentity() {
-        return manager.get();
-    }
-
+  @GET
+  @Counted
+  public Identity getIdentity() {
+    return manager.get();
+  }
 }

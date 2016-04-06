@@ -16,39 +16,37 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 public class ConfigurationResource {
 
-    private final ConfigurationManager configuration;
+  private final ConfigurationManager configuration;
 
-    @Inject
-    public ConfigurationResource(
-            final ConfigurationManager configuration) {
-        this.configuration = configuration;
-    }
+  @Inject
+  public ConfigurationResource(
+    final ConfigurationManager configuration) {
+    this.configuration = configuration;
+  }
 
-    @GET
-    @Path("/cassandra")
-    @Counted
-    public CassandraConfig getCassandraConfig() {
-        return this.configuration.getCassandraConfig();
-    }
+  @GET
+  @Path("/cassandra")
+  @Counted
+  public CassandraConfig getCassandraConfig() {
+    return this.configuration.getCassandraConfig();
+  }
 
-    @GET
-    @Path("/executor")
-    @Counted
-    public ExecutorConfig getExecutorConfig() {
-        return this.configuration.getExecutorConfig();
-    }
+  @GET
+  @Path("/executor")
+  @Counted
+  public ExecutorConfig getExecutorConfig() {
+    return this.configuration.getExecutorConfig();
+  }
 
-    @GET
-    @Path("/nodes")
-    public int getServers() {
-        return configuration.getServers();
-    }
+  @GET
+  @Path("/nodes")
+  public int getServers() {
+    return configuration.getServers();
+  }
 
-    @GET
-    @Path("/seed-nodes")
-    public int getSeeds() {
-        return configuration.getSeeds();
-    }
-
-
+  @GET
+  @Path("/seed-nodes")
+  public int getSeeds() {
+    return configuration.getSeeds();
+  }
 }

@@ -18,58 +18,58 @@ import javax.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class BackupResource {
-    private static final Logger LOGGER = LoggerFactory.getLogger
-            (BackupResource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger
+    (BackupResource.class);
 
-    private final static String STATUS_ALREADY_RUNNING = "already_running";
-    private final static String MESSAGE_ALREADY_RUNNING = "An existing backup is already in progress";
+  private final static String STATUS_ALREADY_RUNNING = "already_running";
+  private final static String MESSAGE_ALREADY_RUNNING = "An existing backup is already in progress";
 
-    private final BackupManager manager;
+  private final BackupManager manager;
 
-    @Inject
-    public BackupResource(final BackupManager manager) {
-        this.manager = manager;
+  @Inject
+  public BackupResource(final BackupManager manager) {
+    this.manager = manager;
+  }
+
+  @PUT
+  @Timed
+  @Path("/start")
+  public Response start(StartBackupRequest request) {
+    LOGGER.info("Processing start backup request = {}", request);
+    try {
+      if (manager.canStartBackup()) {
+        final BackupContext backupContext = from(request);
+        manager.startBackup(backupContext);
+        LOGGER.info("Backup started : context = {}", backupContext);
+        return Response.accepted().build();
+      } else {
+        // Send error back
+        LOGGER.warn("Backup already in progress: request = {}",
+          request);
+        return Response.status(Response.Status.BAD_REQUEST)
+          .entity(
+            ErrorResponse.fromString(
+              "Backup already in progress."))
+          .build();
+      }
+    } catch (Throwable t) {
+      LOGGER.error(
+        String.format("Error creating backup: request = %s",
+          request), t);
+      return Response.status(500).entity(
+        ErrorResponse.fromThrowable(t))
+        .build();
     }
+  }
 
-    @PUT
-    @Timed
-    @Path("/start")
-    public Response start(StartBackupRequest request) {
-        LOGGER.info("Processing start backup request = {}", request);
-        try {
-            if (manager.canStartBackup()) {
-                final BackupContext backupContext = from(request);
-                manager.startBackup(backupContext);
-                LOGGER.info("Backup started : context = {}", backupContext);
-                return Response.accepted().build();
-            } else {
-                // Send error back
-                LOGGER.warn("Backup already in progress: request = {}",
-                        request);
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(
-                                ErrorResponse.fromString(
-                                        "Backup already in progress."))
-                        .build();
-            }
-        } catch (Throwable t) {
-            LOGGER.error(
-                    String.format("Error creating backup: request = %s",
-                            request), t);
-            return Response.status(500).entity(
-                    ErrorResponse.fromThrowable(t))
-                    .build();
-        }
-    }
+  public static BackupContext from(StartBackupRequest request) {
+    final BackupContext context =
+      new BackupContext();
+    context.setName(request.getName());
+    context.setExternalLocation(request.getExternalLocation());
+    context.setS3AccessKey(request.getS3AccessKey());
+    context.setS3SecretKey(request.getS3SecretKey());
 
-    public static BackupContext from(StartBackupRequest request) {
-        final BackupContext context =
-                new BackupContext();
-        context.setName(request.getName());
-        context.setExternalLocation(request.getExternalLocation());
-        context.setS3AccessKey(request.getS3AccessKey());
-        context.setS3SecretKey(request.getS3SecretKey());
-
-        return context;
-    }
+    return context;
+  }
 }

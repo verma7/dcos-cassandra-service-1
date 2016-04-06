@@ -16,50 +16,50 @@ import javax.ws.rs.core.Response;
 
 @Path("/v1/restore")
 public class RestoreResource {
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(RestoreResource.class);
+  private static final Logger LOGGER =
+    LoggerFactory.getLogger(RestoreResource.class);
 
-    private final RestoreManager manager;
+  private final RestoreManager manager;
 
-    @Inject
-    public RestoreResource(final RestoreManager manager) {
-        this.manager = manager;
+  @Inject
+  public RestoreResource(final RestoreManager manager) {
+    this.manager = manager;
+  }
+
+  @PUT
+  @Timed
+  @Path("/start")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response start(StartRestoreRequest request) {
+    LOGGER.info("Processing restore request: request = {}", request);
+    try {
+      if (manager.canStartRestore()) {
+        final RestoreContext context = from(request);
+        manager.startRestore(context);
+        LOGGER.info("Started restore: context = {}", context);
+        return Response.accepted().build();
+      } else {
+        // Send error back
+        return Response.status(Response.Status.BAD_REQUEST)
+          .entity(ErrorResponse.fromString(
+            "Restore already in progress."))
+          .build();
+      }
+    } catch (Throwable throwable) {
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+        .entity(ErrorResponse.fromThrowable(throwable))
+        .build();
     }
+  }
 
-    @PUT
-    @Timed
-    @Path("/start")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response start(StartRestoreRequest request) {
-        LOGGER.info("Processing restore request: request = {}", request);
-        try {
-            if (manager.canStartRestore()) {
-                final RestoreContext context = from(request);
-                manager.startRestore(context);
-                LOGGER.info("Started restore: context = {}", context);
-                return Response.accepted().build();
-            } else {
-                // Send error back
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(ErrorResponse.fromString(
-                                "Restore already in progress."))
-                        .build();
-            }
-        } catch (Throwable throwable) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(ErrorResponse.fromThrowable(throwable))
-                    .build();
-        }
-    }
-
-    public static RestoreContext from(StartRestoreRequest request) {
-        final RestoreContext context =
-                new RestoreContext();
-        context.setName(request.getName());
-        context.setExternalLocation(request.getExternalLocation());
-        context.setS3AccessKey(request.getS3AccessKey());
-        context.setS3SecretKey(request.getS3SecretKey());
-        return context;
-    }
+  public static RestoreContext from(StartRestoreRequest request) {
+    final RestoreContext context =
+      new RestoreContext();
+    context.setName(request.getName());
+    context.setExternalLocation(request.getExternalLocation());
+    context.setS3AccessKey(request.getS3AccessKey());
+    context.setS3SecretKey(request.getS3SecretKey());
+    return context;
+  }
 }

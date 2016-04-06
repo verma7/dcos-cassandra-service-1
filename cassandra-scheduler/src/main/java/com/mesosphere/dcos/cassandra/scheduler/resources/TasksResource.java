@@ -24,7 +24,13 @@ import com.mesosphere.dcos.cassandra.scheduler.tasks.CassandraTasks;
 import org.apache.mesos.Protos;
 import org.glassfish.jersey.server.ManagedAsync;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
@@ -38,122 +44,122 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class TasksResource {
 
-    private final CassandraTasks tasks;
-    private final ExecutorClient client;
+  private final CassandraTasks tasks;
+  private final ExecutorClient client;
 
 
-    @Inject
-    public TasksResource(final CassandraTasks tasks,
-                         final ExecutorClient client) {
-        this.tasks = tasks;
-        this.client = client;
-    }
+  @Inject
+  public TasksResource(final CassandraTasks tasks,
+    final ExecutorClient client) {
+    this.tasks = tasks;
+    this.client = client;
+  }
 
-    @GET
-    @Path("/list")
-    public List<String> list() {
-        return new ArrayList<>(tasks.getDaemons().keySet());
-    }
+  @GET
+  @Path("/list")
+  public List<String> list() {
+    return new ArrayList<>(tasks.getDaemons().keySet());
+  }
 
-    @GET
-    @Path("/{name}/status")
-    @ManagedAsync
-    public void getStatus(
-            @PathParam("name") final String name,
-            @Suspended final AsyncResponse response) {
+  @GET
+  @Path("/{name}/status")
+  @ManagedAsync
+  public void getStatus(
+    @PathParam("name") final String name,
+    @Suspended final AsyncResponse response) {
 
-        Optional<CassandraDaemonTask> taskOption =
-                Optional.ofNullable(tasks.getDaemons().get(name));
-        if (!taskOption.isPresent()) {
-            response.resume(
-                    Response.status(Response.Status.NOT_FOUND));
+    Optional<CassandraDaemonTask> taskOption =
+      Optional.ofNullable(tasks.getDaemons().get(name));
+    if (!taskOption.isPresent()) {
+      response.resume(
+        Response.status(Response.Status.NOT_FOUND));
+    } else {
+      CassandraDaemonTask task = taskOption.get();
+      client.status(task.getHostname(), task.getExecutor().getApiPort()
+      ).whenCompleteAsync((status, error) -> {
+        if (status != null) {
+          response.resume(status);
         } else {
-            CassandraDaemonTask task = taskOption.get();
-            client.status(task.getHostname(), task.getExecutor().getApiPort()
-            ).whenCompleteAsync((status, error) -> {
-                if (status != null) {
-                    response.resume(status);
-                } else {
-                    response.resume(Response.serverError());
-                }
-            });
+          response.resume(Response.serverError());
         }
+      });
     }
+  }
 
-    @GET
-    @Path("/{name}/info")
-    public DaemonInfo getInfo(@PathParam("name") final String name) {
+  @GET
+  @Path("/{name}/info")
+  public DaemonInfo getInfo(@PathParam("name") final String name) {
 
-        Optional<CassandraDaemonTask> taskOption =
-                Optional.ofNullable(tasks.getDaemons().get(name));
-        if (taskOption.isPresent()) {
-            return DaemonInfo.create(taskOption.get());
-        } else {
-            throw new NotFoundException();
-        }
+    Optional<CassandraDaemonTask> taskOption =
+      Optional.ofNullable(tasks.getDaemons().get(name));
+    if (taskOption.isPresent()) {
+      return DaemonInfo.create(taskOption.get());
+    } else {
+      throw new NotFoundException();
     }
+  }
 
-    @PUT
-    @Path("/restart")
-    public void restart(@QueryParam("node") final String name) {
-        Optional<CassandraDaemonTask> taskOption =
-                Optional.ofNullable(tasks.getDaemons().get(name));
-        if (taskOption.isPresent()) {
-            CassandraDaemonTask task = taskOption.get();
-            client.shutdown(task.getHostname(),
-                    task.getExecutor().getApiPort());
-        } else {
-            throw new NotFoundException();
-        }
+  @PUT
+  @Path("/restart")
+  public void restart(@QueryParam("node") final String name) {
+    Optional<CassandraDaemonTask> taskOption =
+      Optional.ofNullable(tasks.getDaemons().get(name));
+    if (taskOption.isPresent()) {
+      CassandraDaemonTask task = taskOption.get();
+      client.shutdown(task.getHostname(),
+        task.getExecutor().getApiPort());
+    } else {
+      throw new NotFoundException();
     }
+  }
 
-    @PUT
-    @Path("/replace")
-    public void replace(@QueryParam("node") final String name)
-            throws Exception {
-        Optional<CassandraDaemonTask> taskOption =
-                Optional.ofNullable(tasks.getDaemons().get(name));
-        if (taskOption.isPresent()) {
-            CassandraDaemonTask task = taskOption.get();
-            tasks.moveDaemon(task);
-            if (!TaskUtils.isTerminated(task.getStatus().getState())) {
-                client.shutdown(task.getHostname(),
-                        task.getExecutor().getApiPort());
-            }
-        } else {
-            throw new NotFoundException();
-        }
+  @PUT
+  @Path("/replace")
+  public void replace(@QueryParam("node") final String name)
+    throws Exception {
+    Optional<CassandraDaemonTask> taskOption =
+      Optional.ofNullable(tasks.getDaemons().get(name));
+    if (taskOption.isPresent()) {
+      CassandraDaemonTask task = taskOption.get();
+      tasks.moveDaemon(task);
+      if (!TaskUtils.isTerminated(task.getStatus().getState())) {
+        client.shutdown(task.getHostname(),
+          task.getExecutor().getApiPort());
+      }
+    } else {
+      throw new NotFoundException();
     }
+  }
 
-    @GET
-    @Path("connect/native")
-    public List<String> nativeConnection() {
-        return tasks.getDaemons().values().stream()
-                .filter(daemonTask ->
-                        Protos.TaskState.TASK_RUNNING.equals(
-                                daemonTask.getStatus().getState()))
-                .map(daemonTask ->
-                        daemonTask.getHostname() +
-                                ":" +
-                                daemonTask.getConfig()
-                                        .getApplication()
-                                        .getNativeTransportPort())
-                .collect(Collectors.toList());
-    }
+  @GET
+  @Path("connect/native")
+  public List<String> nativeConnection() {
+    return tasks.getDaemons().values().stream()
+      .filter(daemonTask ->
+        Protos.TaskState.TASK_RUNNING.equals(
+          daemonTask.getStatus().getState()))
+      .map(daemonTask ->
+        daemonTask.getHostname() +
+          ":" +
+          daemonTask.getConfig()
+            .getApplication()
+            .getNativeTransportPort())
+      .collect(Collectors.toList());
+  }
 
-    @GET
-    @Path("connect/rpc")
-    public List<String> rpcConnection() {
-        return tasks.getDaemons().values().stream()
-                .filter(daemonTask ->
-                        Protos.TaskState.TASK_RUNNING.equals(
-                                daemonTask.getStatus().getState()))
-                .map(daemonTask ->
-                        daemonTask.getHostname() +
-                                ":" +
-                                daemonTask.getConfig()
-                                        .getApplication()
-                                        .getRpcPort())
-                .collect(Collectors.toList());
-    }
+  @GET
+  @Path("connect/rpc")
+  public List<String> rpcConnection() {
+    return tasks.getDaemons().values().stream()
+      .filter(daemonTask ->
+        Protos.TaskState.TASK_RUNNING.equals(
+          daemonTask.getStatus().getState()))
+      .map(daemonTask ->
+        daemonTask.getHostname() +
+          ":" +
+          daemonTask.getConfig()
+            .getApplication()
+            .getRpcPort())
+      .collect(Collectors.toList());
+  }
 }

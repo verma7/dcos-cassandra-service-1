@@ -4,15 +4,15 @@ executor:
   command : ${EXECUTOR_COMMAND:-"./executor/bin/cassandra-executor server executor/conf/executor.yml"}
   arguments : ${EXECUTOR_ARGS:-[]}
   cpus : ${EXECUTOR_CPUS:-0.1}
-  memoryMb : ${EXECUTOR_MEMORY_MB:-768}
-  diskMb : ${EXECUTOR_DISK_MB:-1024}
-  heapMb : ${EXECUTOR_HEAP_MB:-512}
-  apiPort : ${EXECUTOR_API_PORT:-9000}
-  adminPort : ${EXECUTOR_ADMIN_PORT:-9001}
-  javaHome : ${EXECUTOR_JAVA_HOME:-"./jre"}
-  jreLocation : ${EXECUTOR_JRE_LOCATION:-'https://s3-us-west-2.amazonaws.com/cassandra-framework-dev/jre/linux/server-jre-8u74-linux-x64.tar.gz'}
-  executorLocation : ${EXECUTOR_LOCATION:-'https://s3-us-west-2.amazonaws.com/cassandra-framework-dev/testing/executor.zip'}
-  cassandraLocation : ${EXECUTOR_CASSANDRA_LOCATION:-'https://s3-us-west-2.amazonaws.com/cassandra-framework-dev/testing/apache-cassandra-2.2.5-bin.tar.gz'}
+  memory_mb : ${EXECUTOR_MEMORY_MB:-768}
+  disk_mb : ${EXECUTOR_DISK_MB:-1024}
+  heap_mb : ${EXECUTOR_HEAP_MB:-512}
+  api_port : ${EXECUTOR_API_PORT:-9000}
+  admin_port : ${EXECUTOR_ADMIN_PORT:-9001}
+  java_home : ${EXECUTOR_JAVA_HOME:-"./jre"}
+  jre_location : ${EXECUTOR_JRE_LOCATION:-'https://s3-us-west-2.amazonaws.com/cassandra-framework-dev/jre/linux/server-jre-8u74-linux-x64.tar.gz'}
+  executor_location : ${EXECUTOR_LOCATION:-'https://s3-us-west-2.amazonaws.com/cassandra-framework-dev/testing/executor.zip'}
+  cassandra_location : ${EXECUTOR_CASSANDRA_LOCATION:-'https://s3-us-west-2.amazonaws.com/cassandra-framework-dev/testing/apache-cassandra-2.2.5-bin.tar.gz'}
 clusterTask:
   cpus: ${CLUSTER_TASK_CPUS:-0.1}
   memoryMb: ${CLUSTER_TASK_MEMORY_MB:-256}
@@ -108,7 +108,7 @@ identity:
   role : "${FRAMEWORK_ROLE:-${FRAMEWORK_NAME:-cassandra}_role}"
   principal : "${FRAMEWORK_PRINCIPAL:-${FRAMEWORK_NAME:-cassandra}_principal}"
   secret: ${FRAMEWORK_SECRET_FILE:-""}
-  failoverTimeoutS : ${FRAMEWORK_FAILOVER_TIMEOUT_S:-604800}
+  failover_timeout : ${FRAMEWORK_FAILOVER_TIMEOUT_S:-604800}
   checkpoint : ${FRAMEWORK_CHECKPOINT:-true}
 seedsUrl: "${SEEDS_URL:-http://${FRAMEWORK_NAME:-cassandra}.marathon.mesos:${API_PORT:-8080}/v1/seeds}"
 mesos:

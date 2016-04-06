@@ -27,77 +27,77 @@ import java.util.Objects;
 
 public class DaemonInfo {
 
-    public static DaemonInfo create(final CassandraDaemonTask task) {
-        return new DaemonInfo(task);
-    }
+  public static DaemonInfo create(final CassandraDaemonTask task) {
+    return new DaemonInfo(task);
+  }
 
-    @JsonProperty("name")
-    private final String name;
-    @JsonProperty("id")
-    private final String id;
-    @JsonProperty("hostname")
-    private final String hostname;
-    @JsonProperty("slaveId")
-    private final String slaveId;
-    @JsonProperty("state")
-    private final Protos.TaskState state;
-    @JsonProperty("operatingMode")
-    private final CassandraMode mode;
+  @JsonProperty("name")
+  private final String name;
+  @JsonProperty("id")
+  private final String id;
+  @JsonProperty("hostname")
+  private final String hostname;
+  @JsonProperty("slave_id")
+  private final String slaveId;
+  @JsonProperty("state")
+  private final Protos.TaskState state;
+  @JsonProperty("operating_mode")
+  private final CassandraMode mode;
 
-    public DaemonInfo(final CassandraDaemonTask task) {
-        name = task.getName();
-        id = task.getId();
-        hostname = task.getHostname();
-        slaveId = task.getSlaveId();
-        state = task.getStatus().getState();
-        mode = task.getStatus().getMode();
-    }
+  public DaemonInfo(final CassandraDaemonTask task) {
+    name = task.getName();
+    id = task.getId();
+    hostname = task.getHostname();
+    slaveId = task.getSlaveId();
+    state = task.getStatus().getState();
+    mode = task.getStatus().getMode();
+  }
 
-    public String getHostname() {
-        return hostname;
-    }
+  public String getHostname() {
+    return hostname;
+  }
 
-    public String getId() {
-        return id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public CassandraMode getMode() {
-        return mode;
-    }
+  public CassandraMode getMode() {
+    return mode;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getSlaveId() {
-        return slaveId;
-    }
+  public String getSlaveId() {
+    return slaveId;
+  }
 
-    public Protos.TaskState getState() {
-        return state;
-    }
+  public Protos.TaskState getState() {
+    return state;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DaemonInfo)) return false;
-        DaemonInfo that = (DaemonInfo) o;
-        return Objects.equals(getName(), that.getName()) &&
-                Objects.equals(getId(), that.getId()) &&
-                Objects.equals(getHostname(), that.getHostname()) &&
-                Objects.equals(getSlaveId(), that.getSlaveId()) &&
-                getState() == that.getState() &&
-                getMode() == that.getMode();
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof DaemonInfo)) return false;
+    DaemonInfo that = (DaemonInfo) o;
+    return Objects.equals(getName(), that.getName()) &&
+      Objects.equals(getId(), that.getId()) &&
+      Objects.equals(getHostname(), that.getHostname()) &&
+      Objects.equals(getSlaveId(), that.getSlaveId()) &&
+      getState() == that.getState() &&
+      getMode() == that.getMode();
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(getName(), getId(), getHostname(), getSlaveId(),
-                getState(), getMode());
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(getName(), getId(), getHostname(), getSlaveId(),
+      getState(), getMode());
+  }
 
-    @Override
-    public String toString() {
-        return JsonUtils.toJsonString(this);
-    }
+  @Override
+  public String toString() {
+    return JsonUtils.toJsonString(this);
+  }
 }
