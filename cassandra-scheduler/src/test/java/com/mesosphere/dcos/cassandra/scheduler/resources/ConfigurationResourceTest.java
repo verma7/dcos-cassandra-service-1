@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.io.Resources;
 import com.mesosphere.dcos.cassandra.common.config.CassandraConfig;
 import com.mesosphere.dcos.cassandra.common.config.ExecutorConfig;
+import com.mesosphere.dcos.cassandra.scheduler.TestUtils;
 import com.mesosphere.dcos.cassandra.scheduler.config.*;
 import io.dropwizard.configuration.ConfigurationFactory;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -13,12 +14,7 @@ import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.testing.junit.ResourceTestRule;
 import io.dropwizard.validation.BaseValidator;
-import org.apache.curator.RetryPolicy;
-import org.apache.curator.retry.RetryForever;
-import org.apache.curator.retry.RetryUntilElapsed;
 import org.apache.curator.test.TestingServer;
-import org.apache.mesos.curator.CuratorStateStore;
-import org.apache.mesos.state.StateStore;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -54,28 +50,8 @@ public class ConfigurationResourceTest {
                         new EnvironmentVariableSubstitutor(false, true)),
                 Resources.getResource("scheduler.yml").getFile());
         config = mutable.createConfig();
-
-        final CuratorFrameworkConfig curatorConfig = mutable.getCuratorConfig();
-        RetryPolicy retryPolicy =
-                (curatorConfig.getOperationTimeout().isPresent()) ?
-                        new RetryUntilElapsed(
-                                curatorConfig.getOperationTimeoutMs()
-                                        .get()
-                                        .intValue()
-                                , (int) curatorConfig.getBackoffMs()) :
-                        new RetryForever((int) curatorConfig.getBackoffMs());
-
-        StateStore stateStore = new CuratorStateStore(
-                config.getServiceConfig().getName(),
-                server.getConnectString(),
-                retryPolicy);
         configurationManager =
-                new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
-                config.getServiceConfig().getName(),
-                server.getConnectString(),
-                config,
-                new ConfigValidator(),
-                stateStore);
+                TestUtils.createConfigManager(server.getConnectString(), config);
         config = (CassandraSchedulerConfiguration) configurationManager.getTargetConfig();
     }
 

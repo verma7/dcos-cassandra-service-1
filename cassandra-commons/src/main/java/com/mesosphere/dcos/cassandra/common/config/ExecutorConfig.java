@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,7 +20,7 @@ import java.util.Objects;
 
 public class ExecutorConfig {
 
-    public static Serializer<ExecutorConfig> JSON_SERIALIZER =
+    public static final Serializer<ExecutorConfig> JSON_SERIALIZER =
             new Serializer<ExecutorConfig>() {
                 @Override
                 public byte[] serialize(ExecutorConfig value)

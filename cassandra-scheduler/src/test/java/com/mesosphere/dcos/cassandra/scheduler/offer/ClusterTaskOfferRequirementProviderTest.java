@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.io.Resources;
 import com.mesosphere.dcos.cassandra.common.config.ClusterTaskConfig;
 import com.mesosphere.dcos.cassandra.common.tasks.CassandraDaemonTask;
+import com.mesosphere.dcos.cassandra.scheduler.TestUtils;
 import com.mesosphere.dcos.cassandra.scheduler.config.*;
 import com.mesosphere.dcos.cassandra.scheduler.tasks.CassandraTasks;
 import io.dropwizard.configuration.ConfigurationFactory;
@@ -27,14 +28,12 @@ import org.junit.*;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 public class ClusterTaskOfferRequirementProviderTest {
     private static TestingServer server;
     private static CassandraSchedulerConfiguration config;
     private static IdentityManager identity;
     private static ConfigurationManager configuration;
-    private static CuratorFrameworkConfig curatorConfig;
     private static ClusterTaskConfig clusterTaskConfig;
     private static CassandraTasks cassandraTasks;
     private static ClusterTaskOfferRequirementProvider provider;
@@ -54,7 +53,6 @@ public class ClusterTaskOfferRequirementProviderTest {
     public void beforeEach() throws Exception {
         cassandraTasks = new CassandraTasks(
                 configuration,
-                curatorConfig,
                 clusterTaskConfig,
                 stateStore);
 
@@ -104,12 +102,6 @@ public class ClusterTaskOfferRequirementProviderTest {
         config = mutable.createConfig();
         ServiceConfig initial = config.getServiceConfig();
 
-        curatorConfig = CuratorFrameworkConfig.create(server.getConnectString(),
-                10000L,
-                10000L,
-                Optional.empty(),
-                250L);
-
         clusterTaskConfig = config.getClusterTaskConfig();
 
         final CuratorFrameworkConfig curatorConfig = mutable.getCuratorConfig();
@@ -134,12 +126,7 @@ public class ClusterTaskOfferRequirementProviderTest {
         identity.register("test_id");
 
         DefaultConfigurationManager configurationManager =
-                new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
-                config.getServiceConfig().getName(),
-                server.getConnectString(),
-                config,
-                new ConfigValidator(),
-                stateStore);
+                TestUtils.createConfigManager(server.getConnectString(), config);
         configuration = new ConfigurationManager(configurationManager);
 
         provider = new ClusterTaskOfferRequirementProvider();

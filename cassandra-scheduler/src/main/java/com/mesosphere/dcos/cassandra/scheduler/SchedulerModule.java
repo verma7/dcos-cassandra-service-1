@@ -31,12 +31,10 @@ import com.mesosphere.dcos.cassandra.scheduler.tasks.CassandraTasks;
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.client.HttpClientConfiguration;
 import io.dropwizard.setup.Environment;
-import org.apache.curator.RetryPolicy;
-import org.apache.curator.retry.RetryForever;
-import org.apache.curator.retry.RetryUntilElapsed;
 import org.apache.http.client.HttpClient;
+import org.apache.mesos.config.ConfigStore;
 import org.apache.mesos.config.ConfigStoreException;
-import org.apache.mesos.curator.CuratorStateStore;
+import org.apache.mesos.config.Configuration;
 import org.apache.mesos.reconciliation.DefaultReconciler;
 import org.apache.mesos.reconciliation.Reconciler;
 import org.apache.mesos.scheduler.plan.PhaseStrategyFactory;
@@ -52,52 +50,37 @@ public class SchedulerModule extends AbstractModule {
 
     private final CassandraSchedulerConfiguration configuration;
     private final Environment environment;
-    private final CuratorFrameworkConfig curatorConfig;
     private final MesosConfig mesosConfig;
+    private final ConfigStore<Configuration> configStore;
+    private final StateStore stateStore;
 
     public SchedulerModule(
             final CassandraSchedulerConfiguration configuration,
-            final CuratorFrameworkConfig curatorConfig,
             final MesosConfig mesosConfig,
-            final Environment environment) {
+            final Environment environment,
+            final ConfigStore<Configuration> configStore,
+            final StateStore stateStore) {
         this.configuration = configuration;
         this.environment = environment;
-        this.curatorConfig = curatorConfig;
         this.mesosConfig = mesosConfig;
+        this.configStore = configStore;
+        this.stateStore = stateStore;
     }
 
     @Override
     protected void configure() {
         bind(Environment.class).toInstance(this.environment);
-
-        bind(CassandraSchedulerConfiguration.class).toInstance(
-                this.configuration);
-
-
-        RetryPolicy retryPolicy =
-                (curatorConfig.getOperationTimeout().isPresent()) ?
-                        new RetryUntilElapsed(
-                                curatorConfig.getOperationTimeoutMs()
-                                        .get()
-                                        .intValue()
-                                , (int) curatorConfig.getBackoffMs()) :
-                        new RetryForever((int) curatorConfig.getBackoffMs());
-
-        CuratorStateStore curatorStateStore = new CuratorStateStore(
-                configuration.getServiceConfig().getName(),
-                curatorConfig.getServers(),
-                retryPolicy);
-        bind(StateStore.class).toInstance(curatorStateStore);
+        bind(CassandraSchedulerConfiguration.class).toInstance(this.configuration);
+        bind(StateStore.class).toInstance(this.stateStore);
 
         try {
             final ConfigValidator configValidator = new ConfigValidator();
             final DefaultConfigurationManager configurationManager =
                     new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
-                    configuration.getServiceConfig().getName(),
-                    curatorConfig.getServers(),
                     configuration,
                     configValidator,
-                    curatorStateStore);
+                    configStore,
+                    stateStore);
             bind(DefaultConfigurationManager.class).toInstance(configurationManager);
         } catch (ConfigStoreException e) {
             throw new RuntimeException(e);
@@ -137,20 +120,15 @@ public class SchedulerModule extends AbstractModule {
         }).toInstance(RepairContext.JSON_SERIALIZER);
 
         bind(new TypeLiteral<Serializer<DataCenterInfo>>() {
-        }).toInstance(
-                DataCenterInfo.JSON_SERIALIZER
-        );
+        }).toInstance(DataCenterInfo.JSON_SERIALIZER);
 
         bind(MesosConfig.class).toInstance(mesosConfig);
 
         bindConstant().annotatedWith(Names.named("ConfiguredSyncDelayMs")).to(
-                configuration.getExternalDcSyncMs()
-        );
+                configuration.getExternalDcSyncMs());
         bindConstant().annotatedWith(Names.named("ConfiguredDcUrl")).to(
-                configuration.getDcUrl()
-        );
-        bind(new TypeLiteral<List<String>>() {
-        })
+                configuration.getDcUrl());
+        bind(new TypeLiteral<List<String>>() {})
                 .annotatedWith(Names.named("ConfiguredExternalDcs"))
                 .toInstance(configuration.getExternalDcsList());
         bind(ServiceConfig.class).annotatedWith(
@@ -176,16 +154,15 @@ public class SchedulerModule extends AbstractModule {
                 configuration.getPlacementStrategy());
         bindConstant().annotatedWith(
                 Names.named("ConfiguredPhaseStrategy")).to(
-                configuration.getPhaseStrategy()
-        );
+                configuration.getPhaseStrategy());
 
         HttpClientConfiguration httpClient = new HttpClientConfiguration();
-        bind(HttpClient.class).toInstance(new HttpClientBuilder(environment).using(httpClient).build("http-client"));
+        bind(HttpClient.class).toInstance(
+                new HttpClientBuilder(environment).using(httpClient).build("http-client"));
         bind(ExecutorService.class).toInstance(Executors.newCachedThreadPool());
-        bind(CuratorFrameworkConfig.class).toInstance(curatorConfig);
         bind(ClusterTaskConfig.class).toInstance(configuration.getClusterTaskConfig());
         bind(ScheduledExecutorService.class).toInstance(
-                Executors .newScheduledThreadPool(8));
+                Executors.newScheduledThreadPool(8));
         bind(PhaseStrategyFactory.class).to(CassandraPhaseStrategies.class)
                 .asEagerSingleton();
         bind(StageManager.class).to(CassandraStageManager.class)

@@ -14,7 +14,6 @@ import com.mesosphere.dcos.cassandra.common.tasks.repair.RepairContext;
 import com.mesosphere.dcos.cassandra.common.tasks.repair.RepairTask;
 import com.mesosphere.dcos.cassandra.scheduler.config.CassandraSchedulerConfiguration;
 import com.mesosphere.dcos.cassandra.scheduler.config.ConfigurationManager;
-import com.mesosphere.dcos.cassandra.scheduler.config.CuratorFrameworkConfig;
 import com.mesosphere.dcos.cassandra.scheduler.config.ServiceConfig;
 import com.mesosphere.dcos.cassandra.scheduler.persistence.PersistenceException;
 import io.dropwizard.lifecycle.Managed;
@@ -52,7 +51,6 @@ public class CassandraTasks implements Managed, TaskStatusProvider {
     @Inject
     public CassandraTasks(
             final ConfigurationManager configuration,
-            final CuratorFrameworkConfig curatorConfig,
             final ClusterTaskConfig clusterTaskConfig,
             final StateStore stateStore) {
         this.configuration = configuration;

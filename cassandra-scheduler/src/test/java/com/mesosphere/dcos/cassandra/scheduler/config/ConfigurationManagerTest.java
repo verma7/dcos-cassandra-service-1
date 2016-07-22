@@ -5,18 +5,15 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.io.Resources;
 import com.mesosphere.dcos.cassandra.common.config.ExecutorConfig;
+import com.mesosphere.dcos.cassandra.scheduler.TestUtils;
+
 import io.dropwizard.configuration.ConfigurationFactory;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.FileConfigurationSourceProvider;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.validation.BaseValidator;
-import org.apache.curator.RetryPolicy;
-import org.apache.curator.retry.RetryForever;
-import org.apache.curator.retry.RetryUntilElapsed;
 import org.apache.curator.test.TestingServer;
-import org.apache.mesos.curator.CuratorStateStore;
-import org.apache.mesos.state.StateStore;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,9 +24,8 @@ import java.util.ArrayList;
 import static org.junit.Assert.assertEquals;
 
 public class ConfigurationManagerTest {
-    private static TestingServer server;
-    private static ConfigurationFactory<MutableSchedulerConfiguration> factory;
-    private static String connectString;
+    private TestingServer server;
+    private ConfigurationFactory<MutableSchedulerConfiguration> factory;
 
     @Before
     public void beforeAll() throws Exception {
@@ -42,7 +38,6 @@ public class ConfigurationManagerTest {
                                 .registerModule(new GuavaModule())
                                 .registerModule(new Jdk8Module()),
                         "dw");
-        connectString = server.getConnectString();
     }
 
     @Test
@@ -54,27 +49,8 @@ public class ConfigurationManagerTest {
                         new EnvironmentVariableSubstitutor(false, true)),
                 configFilePath);
         final CassandraSchedulerConfiguration original  = mutableConfig.createConfig();
-        final CuratorFrameworkConfig curatorConfig = mutableConfig.getCuratorConfig();
-        RetryPolicy retryPolicy =
-                (curatorConfig.getOperationTimeout().isPresent()) ?
-                        new RetryUntilElapsed(
-                                curatorConfig.getOperationTimeoutMs()
-                                        .get()
-                                        .intValue()
-                                , (int) curatorConfig.getBackoffMs()) :
-                        new RetryForever((int) curatorConfig.getBackoffMs());
-
-        StateStore stateStore = new CuratorStateStore(
-                original.getServiceConfig().getName(),
-                server.getConnectString(),
-                retryPolicy);
         DefaultConfigurationManager configurationManager =
-                new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
-                original.getServiceConfig().getName(),
-                connectString,
-                original,
-                new ConfigValidator(),
-                stateStore);
+                TestUtils.createConfigManager(server.getConnectString(), original);
         ConfigurationManager manager = new ConfigurationManager(configurationManager);
         CassandraSchedulerConfiguration targetConfig = (CassandraSchedulerConfiguration)configurationManager.getTargetConfig();
         assertEquals("cassandra", original.getServiceConfig().getName());
@@ -101,27 +77,8 @@ public class ConfigurationManagerTest {
                         new EnvironmentVariableSubstitutor(false, true)),
                 Resources.getResource("scheduler.yml").getFile());
         final CassandraSchedulerConfiguration original = mutable.createConfig();
-        final CuratorFrameworkConfig curatorConfig = mutable.getCuratorConfig();
-        RetryPolicy retryPolicy =
-                (curatorConfig.getOperationTimeout().isPresent()) ?
-                        new RetryUntilElapsed(
-                                curatorConfig.getOperationTimeoutMs()
-                                        .get()
-                                        .intValue()
-                                , (int) curatorConfig.getBackoffMs()) :
-                        new RetryForever((int) curatorConfig.getBackoffMs());
-
-        StateStore stateStore = new CuratorStateStore(
-                original.getServiceConfig().getName(),
-                server.getConnectString(),
-                retryPolicy);
-        DefaultConfigurationManager configurationManager
-                = new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
-                original.getServiceConfig().getName(),
-                connectString,
-                original,
-                new ConfigValidator(),
-                stateStore);
+        DefaultConfigurationManager configurationManager =
+                TestUtils.createConfigManager(server.getConnectString(), original);
         ConfigurationManager manager = new ConfigurationManager(configurationManager);
         CassandraSchedulerConfiguration targetConfig =
           (CassandraSchedulerConfiguration)configurationManager.getTargetConfig();
@@ -168,13 +125,7 @@ public class ConfigurationManagerTest {
 
         CassandraSchedulerConfiguration updated = mutable.createConfig();
 
-        configurationManager =
-                new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
-                original.getServiceConfig().getName(),
-                connectString,
-                updated,
-                new ConfigValidator(),
-                stateStore);
+        configurationManager = TestUtils.createConfigManager(server.getConnectString(), updated);
         configurationManager.store(updated);
         manager = new ConfigurationManager(configurationManager);
         targetConfig = (CassandraSchedulerConfiguration)configurationManager.getTargetConfig();
@@ -198,27 +149,9 @@ public class ConfigurationManagerTest {
                         new EnvironmentVariableSubstitutor(false, true)),
                 Resources.getResource("scheduler.yml").getFile());
         CassandraSchedulerConfiguration originalConfig = mutable.createConfig();
-        final CuratorFrameworkConfig curatorConfig = mutable.getCuratorConfig();
-        RetryPolicy retryPolicy =
-                (curatorConfig.getOperationTimeout().isPresent()) ?
-                        new RetryUntilElapsed(
-                                curatorConfig.getOperationTimeoutMs()
-                                        .get()
-                                        .intValue()
-                                , (int) curatorConfig.getBackoffMs()) :
-                        new RetryForever((int) curatorConfig.getBackoffMs());
 
-        StateStore stateStore = new CuratorStateStore(
-                originalConfig.getServiceConfig().getName(),
-                server.getConnectString(),
-                retryPolicy);
         DefaultConfigurationManager configurationManager =
-                new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
-                originalConfig.getServiceConfig().getName(),
-                connectString,
-                originalConfig,
-                new ConfigValidator(),
-                stateStore);
+                TestUtils.createConfigManager(server.getConnectString(), originalConfig);
         ConfigurationManager manager = new ConfigurationManager(configurationManager);
         CassandraSchedulerConfiguration targetConfig = (CassandraSchedulerConfiguration)configurationManager.getTargetConfig();
 
@@ -235,12 +168,7 @@ public class ConfigurationManagerTest {
         mutable.setServers(updatedServers);
 
         configurationManager =
-                new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
-                originalConfig.getServiceConfig().getName(),
-                connectString,
-                mutable.createConfig(),
-                new ConfigValidator(),
-                stateStore);
+                TestUtils.createConfigManager(server.getConnectString(), mutable.createConfig());
         manager = new ConfigurationManager(configurationManager);
 
         manager.start();
@@ -256,27 +184,8 @@ public class ConfigurationManagerTest {
                         new EnvironmentVariableSubstitutor(false, true)),
                 Resources.getResource("scheduler.yml").getFile());
         CassandraSchedulerConfiguration originalConfig = mutableSchedulerConfiguration.createConfig();
-        final CuratorFrameworkConfig curatorConfig = mutableSchedulerConfiguration.getCuratorConfig();
-        RetryPolicy retryPolicy =
-                (curatorConfig.getOperationTimeout().isPresent()) ?
-                        new RetryUntilElapsed(
-                                curatorConfig.getOperationTimeoutMs()
-                                        .get()
-                                        .intValue()
-                                , (int) curatorConfig.getBackoffMs()) :
-                        new RetryForever((int) curatorConfig.getBackoffMs());
-
-        StateStore stateStore = new CuratorStateStore(
-                originalConfig.getServiceConfig().getName(),
-                server.getConnectString(),
-                retryPolicy);
-        DefaultConfigurationManager configurationManager
-                = new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
-                originalConfig.getServiceConfig().getName(),
-                connectString,
-                originalConfig,
-                new ConfigValidator(),
-                stateStore);
+        DefaultConfigurationManager configurationManager =
+                TestUtils.createConfigManager(server.getConnectString(), originalConfig);
         ConfigurationManager manager = new ConfigurationManager(configurationManager);
         CassandraSchedulerConfiguration targetConfig = (CassandraSchedulerConfiguration)configurationManager.getTargetConfig();
 
@@ -292,13 +201,8 @@ public class ConfigurationManagerTest {
         int updatedSeeds = originalConfig.getServers() + 1;
         mutableSchedulerConfiguration.setSeeds(updatedSeeds);
 
-        configurationManager =
-                new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
-                originalConfig.getServiceConfig().getName(),
-                connectString,
-                mutableSchedulerConfiguration.createConfig(),
-                new ConfigValidator(),
-                stateStore);
+        configurationManager = TestUtils.createConfigManager(
+                server.getConnectString(), mutableSchedulerConfiguration.createConfig());
         manager = new ConfigurationManager(configurationManager);
         manager.start();
         assertEquals(1, configurationManager.getErrors().size());

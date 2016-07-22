@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.io.Resources;
 import com.mesosphere.dcos.cassandra.common.config.ClusterTaskConfig;
 import com.mesosphere.dcos.cassandra.common.tasks.*;
+import com.mesosphere.dcos.cassandra.scheduler.TestUtils;
 import com.mesosphere.dcos.cassandra.scheduler.config.*;
 import io.dropwizard.configuration.ConfigurationFactory;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -12,8 +13,6 @@ import io.dropwizard.configuration.FileConfigurationSourceProvider;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.validation.BaseValidator;
-import org.apache.curator.RetryPolicy;
-import org.apache.curator.retry.RetryForever;
 import org.apache.curator.retry.RetryUntilElapsed;
 import org.apache.curator.test.TestingServer;
 import org.apache.mesos.Protos;
@@ -72,20 +71,10 @@ public class CassandraTasksTest {
         final CassandraSchedulerConfiguration targetConfig = config.createConfig();
         clusterTaskConfig = targetConfig.getClusterTaskConfig();
 
-        final CuratorFrameworkConfig curatorConfig = config.getCuratorConfig();
-        RetryPolicy retryPolicy =
-                (curatorConfig.getOperationTimeout().isPresent()) ?
-                        new RetryUntilElapsed(
-                                curatorConfig.getOperationTimeoutMs()
-                                        .get()
-                                        .intValue()
-                                , (int) curatorConfig.getBackoffMs()) :
-                        new RetryForever((int) curatorConfig.getBackoffMs());
-
         stateStore = new CuratorStateStore(
                 targetConfig.getServiceConfig().getName(),
                 server.getConnectString(),
-                retryPolicy);
+                new RetryUntilElapsed(3000, 1000));
         stateStore.storeFrameworkId(Protos.FrameworkID.newBuilder().setValue("1234").build());
         identity = new IdentityManager(
                 initial,stateStore);
@@ -93,18 +82,12 @@ public class CassandraTasksTest {
         identity.register("test_id");
 
         DefaultConfigurationManager configurationManager =
-                new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
-                config.createConfig().getServiceConfig().getName(),
-                server.getConnectString(),
-                config.createConfig(),
-                new ConfigValidator(),
-                stateStore);
+                TestUtils.createConfigManager(server.getConnectString(), targetConfig);
 
         configuration = new ConfigurationManager(configurationManager);
 
         cassandraTasks = new CassandraTasks(
                 configuration,
-                curatorConfig,
                 clusterTaskConfig,
                 stateStore);
     }

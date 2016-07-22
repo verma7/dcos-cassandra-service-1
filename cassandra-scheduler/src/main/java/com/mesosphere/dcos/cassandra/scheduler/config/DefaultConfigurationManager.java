@@ -6,7 +6,6 @@ import com.mesosphere.dcos.cassandra.common.config.ExecutorConfig;
 import com.mesosphere.dcos.cassandra.scheduler.offer.PersistentOfferRequirementProvider;
 import org.apache.mesos.Protos;
 import org.apache.mesos.config.*;
-import org.apache.mesos.curator.CuratorConfigStore;
 import org.apache.mesos.protobuf.LabelBuilder;
 import org.apache.mesos.state.StateStore;
 import org.slf4j.Logger;
@@ -26,14 +25,13 @@ public class DefaultConfigurationManager {
 
     public DefaultConfigurationManager(
             Class<?> configClass,
-            String frameworkName,
-            String connectionHost,
             Configuration newConfiguration,
             ConfigValidator configValidator,
+            ConfigStore<Configuration> configStore,
             StateStore stateStore) throws ConfigStoreException {
         this.configClass = configClass;
         this.stateStore = stateStore;
-        configStore = new CuratorConfigStore<>(frameworkName, connectionHost);
+        this.configStore = configStore;
         Configuration oldConfig = null;
         try {
             oldConfig = getTargetConfig();

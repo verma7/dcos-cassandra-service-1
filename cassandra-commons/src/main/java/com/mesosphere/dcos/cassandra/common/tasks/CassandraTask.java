@@ -38,8 +38,6 @@ import org.apache.mesos.offer.TaskUtils;
 import org.apache.mesos.protobuf.LabelBuilder;
 import org.apache.mesos.util.Algorithms;
 
-import static com.mesosphere.dcos.cassandra.common.util.TaskUtils.*;
-
 /**
  * CassandraTask is the base class from which all framework tasks derive.
  * When new tasks are added this serializers of this class must be updated to
@@ -48,13 +46,13 @@ import static com.mesosphere.dcos.cassandra.common.util.TaskUtils.*;
 
 public abstract class CassandraTask {
 
-    protected static Protos.SlaveID EMPTY_SLAVE_ID = Protos.SlaveID
+    protected static final Protos.SlaveID EMPTY_SLAVE_ID = Protos.SlaveID
         .newBuilder().setValue("").build();
 
     /**
      * Serializer that serializes CassandraTasks to and from JSON Objects.
      */
-    public static Serializer<CassandraTask> PROTO_SERIALIZER = new
+    public static final Serializer<CassandraTask> PROTO_SERIALIZER = new
         Serializer<CassandraTask>() {
             @Override
             public byte[] serialize(CassandraTask value)

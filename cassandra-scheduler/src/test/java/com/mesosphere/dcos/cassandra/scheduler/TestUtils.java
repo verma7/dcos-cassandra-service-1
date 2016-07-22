@@ -2,8 +2,16 @@ package com.mesosphere.dcos.cassandra.scheduler;
 
 import com.mesosphere.dcos.cassandra.common.tasks.CassandraData;
 import com.mesosphere.dcos.cassandra.common.tasks.CassandraMode;
-import com.mesosphere.dcos.cassandra.scheduler.plan.CassandraDaemonBlock;
+import com.mesosphere.dcos.cassandra.scheduler.config.CassandraSchedulerConfiguration;
+import com.mesosphere.dcos.cassandra.scheduler.config.ConfigValidator;
+import com.mesosphere.dcos.cassandra.scheduler.config.DefaultConfigurationManager;
+
+import org.apache.curator.RetryPolicy;
+import org.apache.curator.retry.RetryUntilElapsed;
 import org.apache.mesos.Protos;
+import org.apache.mesos.config.ConfigStoreException;
+import org.apache.mesos.curator.CuratorConfigStore;
+import org.apache.mesos.curator.CuratorStateStore;
 import org.apache.mesos.protobuf.ResourceBuilder;
 
 import java.util.UUID;
@@ -76,5 +84,18 @@ public class TestUtils {
                 .setState(taskState)
                 .setData(CassandraData.createDaemonStatusData(cassandraMode).getBytes())
                 .build();
+    }
+
+    public static DefaultConfigurationManager createConfigManager(
+            String curatorConnectString, CassandraSchedulerConfiguration config)
+            throws ConfigStoreException {
+        final RetryPolicy retryPolicy = new RetryUntilElapsed(3000, 1000);
+        final String frameworkName = config.getServiceConfig().getName();
+        return new DefaultConfigurationManager(
+                CassandraSchedulerConfiguration.class,
+                config,
+                new ConfigValidator(),
+                new CuratorConfigStore<>(frameworkName, curatorConnectString, retryPolicy),
+                new CuratorStateStore(frameworkName, curatorConnectString, retryPolicy));
     }
 }

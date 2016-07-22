@@ -23,7 +23,8 @@ package com.mesosphere.dcos.cassandra.common.serialization;
 public interface Serializer<T> {
 
     /**
-     * Creates a byte array that contains a binary representation of
+     * Creates a byte array that contains a binary representation of the provided Object.
+     *
      * @param value The value that will be serialized.
      * @return A byte array containing the binary representation of value.
      * @throws SerializationException If value could not be serialized.
@@ -31,11 +32,11 @@ public interface Serializer<T> {
     byte[] serialize(final T value) throws SerializationException;
 
     /**
-     * Creates an Object instance parsed from bytes.
+     * Creates an Object instance parsed from the provided bytes.
+     *
      * @param bytes A byte array containing a serialized object.
      * @return The instance parsed from bytes.
-     * @throws SerializationException If an Object could not be parsed from
-     * bytes.
+     * @throws SerializationException If an Object could not be parsed from bytes.
      */
     T deserialize(final byte[] bytes) throws SerializationException;
 }
