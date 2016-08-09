@@ -1,0 +1,4 @@
+INFO  [main] 2016-03-29 13:29:59,444 NettyUtil.java:83 - Did not find Netty's native epoll transport in the classpath, defaulting to NIO.
+WARN  [main] 2016-03-29 13:29:59,727 Cluster.java:1900 - You listed localhost/0:0:0:0:0:0:0:1:9042 in your contact points, but it could not be reached at startup
+INFO  [main] 2016-03-29 13:29:59,809 DCAwareRoundRobinPolicy.java:193 - Using data-center name 'datacenter1' for DCAwareRoundRobinPolicy (if this is incorrect, please provide the correct datacenter name with DCAwareRoundRobinPolicy constructor)
+INFO  [main] 2016-03-29 13:29:59,810 Cluster.java:1311 - New Cassandra host localhost/127.0.0.1:9042 added

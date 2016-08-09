@@ -1,0 +1,47 @@
+CompilerOracle: inline org/apache/cassandra/db/AbstractNativeCell.compareTo (Lorg/apache/cassandra/db/composites/Composite;)I
+CompilerOracle: inline org/apache/cassandra/db/composites/AbstractSimpleCellNameType.compareUnsigned (Lorg/apache/cassandra/db/composites/Composite;Lorg/apache/cassandra/db/composites/Composite;)I
+CompilerOracle: inline org/apache/cassandra/io/util/Memory.checkBounds (JJ)V
+CompilerOracle: inline org/apache/cassandra/io/util/SafeMemory.checkBounds (JJ)V
+CompilerOracle: inline org/apache/cassandra/utils/AsymmetricOrdering.selectBoundary (Lorg/apache/cassandra/utils/AsymmetricOrdering/Op;II)I
+CompilerOracle: inline org/apache/cassandra/utils/AsymmetricOrdering.strictnessOfLessThan (Lorg/apache/cassandra/utils/AsymmetricOrdering/Op;)I
+CompilerOracle: inline org/apache/cassandra/utils/ByteBufferUtil.compare (Ljava/nio/ByteBuffer;[B)I
+CompilerOracle: inline org/apache/cassandra/utils/ByteBufferUtil.compare ([BLjava/nio/ByteBuffer;)I
+CompilerOracle: inline org/apache/cassandra/utils/ByteBufferUtil.compareUnsigned (Ljava/nio/ByteBuffer;Ljava/nio/ByteBuffer;)I
+CompilerOracle: inline org/apache/cassandra/utils/FastByteOperations$UnsafeOperations.compareTo (Ljava/lang/Object;JILjava/lang/Object;JI)I
+CompilerOracle: inline org/apache/cassandra/utils/FastByteOperations$UnsafeOperations.compareTo (Ljava/lang/Object;JILjava/nio/ByteBuffer;)I
+CompilerOracle: inline org/apache/cassandra/utils/FastByteOperations$UnsafeOperations.compareTo (Ljava/nio/ByteBuffer;Ljava/nio/ByteBuffer;)I
+INFO  23:09:06 Loading settings from file:/Users/verma/code/dcos-cassandra-service/cassandra-executor/apache-cassandra-2.2.5/conf/cassandra.yaml
+INFO  23:09:06 Node configuration:[authenticator=AllowAllAuthenticator; authorizer=AllowAllAuthorizer; auto_snapshot=true; batch_size_fail_threshold_in_kb=50; batch_size_warn_threshold_in_kb=5; batchlog_replay_throttle_in_kb=1024; cas_contention_timeout_in_ms=1000; client_encryption_options=<REDACTED>; cluster_name=Test Cluster; column_index_size_in_kb=64; commit_failure_policy=stop; commitlog_directory=/Users/verma/code/dcos-cassandra-service/cassandra-executor/volume/commitlog; commitlog_segment_size_in_mb=32; commitlog_sync=periodic; commitlog_sync_period_in_ms=10000; compaction_large_partition_warning_threshold_mb=100; compaction_throughput_mb_per_sec=16; concurrent_counter_writes=32; concurrent_reads=32; concurrent_writes=32; counter_cache_save_period=7200; counter_cache_size_in_mb=null; counter_write_request_timeout_in_ms=5000; cross_node_timeout=false; data_file_directories=[/Users/verma/code/dcos-cassandra-service/cassandra-executor/volume/data]; disk_failure_policy=stop; dynamic_snitch_badness_threshold=0.1; dynamic_snitch_reset_interval_in_ms=600000; dynamic_snitch_update_interval_in_ms=100; enable_user_defined_functions=false; endpoint_snitch=GossipingPropertyFileSnitch; hinted_handoff_enabled=true; hinted_handoff_throttle_in_kb=1024; incremental_backups=false; index_summary_capacity_in_mb=null; index_summary_resize_interval_in_minutes=60; inter_dc_tcp_nodelay=false; internode_compression=all; key_cache_save_period=14400; key_cache_size_in_mb=null; listen_address=172.24.66.229; max_hint_window_in_ms=10800000; max_hints_delivery_threads=2; memtable_allocation_type=heap_buffers; native_transport_port=9042; num_tokens=256; partitioner=org.apache.cassandra.dht.Murmur3Partitioner; permissions_validity_in_ms=2000; range_request_timeout_in_ms=10000; read_request_timeout_in_ms=5000; request_scheduler=org.apache.cassandra.scheduler.NoScheduler; request_timeout_in_ms=10000; role_manager=CassandraRoleManager; roles_validity_in_ms=2000; row_cache_save_period=0; row_cache_size_in_mb=0; rpc_address=172.24.66.229; rpc_keepalive=true; rpc_port=9160; rpc_server_type=sync; saved_caches_directory=/Users/verma/code/dcos-cassandra-service/cassandra-executor/volume/saved_caches; seed_provider=[{class_name=com.mesosphere.dcos.cassandra.DcosSeedProvider, parameters=[{seeds_url=http://localhost:58400/application/seeds}]}]; server_encryption_options=<REDACTED>; snapshot_before_compaction=false; ssl_storage_port=7001; sstable_preemptive_open_interval_in_mb=50; start_native_transport=true; start_rpc=false; storage_port=7000; thrift_framed_transport_size_in_mb=15; tombstone_failure_threshold=100000; tombstone_warn_threshold=1000; tracetype_query_ttl=86400; tracetype_repair_ttl=604800; trickle_fsync=false; trickle_fsync_interval_in_kb=10240; truncate_request_timeout_in_ms=60000; windows_timer_interval=1; write_request_timeout_in_ms=2000]
+INFO  23:09:06 DiskAccessMode 'auto' determined to be mmap, indexAccessMode is mmap
+INFO  23:09:06 Global memtable on-heap threshold is enabled at 509MB
+INFO  23:09:06 Global memtable off-heap threshold is enabled at 509MB
+INFO  23:09:06 Loaded cassandra-topology.properties for compatibility
+ERROR 23:09:06 Failed to retrieve seeds from http://localhost:58400/application/seeds
+java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method) ~[na:1.8.0_65]
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:350) ~[na:1.8.0_65]
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:206) ~[na:1.8.0_65]
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:188) ~[na:1.8.0_65]
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392) ~[na:1.8.0_65]
+	at java.net.Socket.connect(Socket.java:589) ~[na:1.8.0_65]
+	at sun.net.NetworkClient.doConnect(NetworkClient.java:175) ~[na:1.8.0_65]
+	at sun.net.www.http.HttpClient.openServer(HttpClient.java:432) ~[na:1.8.0_65]
+	at sun.net.www.http.HttpClient.openServer(HttpClient.java:527) ~[na:1.8.0_65]
+	at sun.net.www.http.HttpClient.<init>(HttpClient.java:211) ~[na:1.8.0_65]
+	at sun.net.www.http.HttpClient.New(HttpClient.java:308) ~[na:1.8.0_65]
+	at sun.net.www.http.HttpClient.New(HttpClient.java:326) ~[na:1.8.0_65]
+	at sun.net.www.protocol.http.HttpURLConnection.getNewHttpClient(HttpURLConnection.java:1169) ~[na:1.8.0_65]
+	at sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1105) ~[na:1.8.0_65]
+	at sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:999) ~[na:1.8.0_65]
+	at sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:933) ~[na:1.8.0_65]
+	at sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1513) ~[na:1.8.0_65]
+	at sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1441) ~[na:1.8.0_65]
+	at java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:480) ~[na:1.8.0_65]
+	at com.mesosphere.dcos.cassandra.DcosSeedProvider.getRemoteSeeds(DcosSeedProvider.java:44) ~[seedprovider-0.1.0.jar:na]
+	at com.mesosphere.dcos.cassandra.DcosSeedProvider.getSeeds(DcosSeedProvider.java:94) ~[seedprovider-0.1.0.jar:na]
+	at org.apache.cassandra.config.DatabaseDescriptor.applyConfig(DatabaseDescriptor.java:666) [apache-cassandra-2.2.5.jar:2.2.5]
+	at org.apache.cassandra.config.DatabaseDescriptor.<clinit>(DatabaseDescriptor.java:119) [apache-cassandra-2.2.5.jar:2.2.5]
+	at org.apache.cassandra.service.CassandraDaemon.activate(CassandraDaemon.java:491) [apache-cassandra-2.2.5.jar:2.2.5]
+	at org.apache.cassandra.service.CassandraDaemon.main(CassandraDaemon.java:625) [apache-cassandra-2.2.5.jar:2.2.5]
+Exception (org.apache.cassandra.exceptions.ConfigurationException) encountered during startup: The seed provider lists no seeds.
+ERROR 23:09:06 Exception encountered during startup: The seed provider lists no seeds.

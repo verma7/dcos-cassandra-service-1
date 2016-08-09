@@ -1,0 +1,6 @@
+statsd:
+- period: 17
+  hosts:
+  - {port: 1234, host: 127.1.2.3}
+  prefix: metrics.prefix..verma-C02RG0AGG8WM
+  timeunit: SECONDS
