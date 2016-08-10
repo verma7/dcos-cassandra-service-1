@@ -1,5 +1,0 @@
-graphite:
-- period: 60
-  hosts:
-  - {port: 4744, host: 127.0.0.1}
-  timeunit: SECONDS
