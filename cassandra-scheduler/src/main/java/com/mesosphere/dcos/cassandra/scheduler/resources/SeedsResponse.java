@@ -10,14 +10,14 @@ import java.util.List;
 import java.util.Objects;
 
 public class SeedsResponse {
-    @JsonProperty("isSeed")
+    @JsonProperty("is_seed")
     private final boolean isSeed;
     @JsonProperty("seeds")
     private final List<String> seeds;
 
     @JsonCreator
     public static SeedsResponse create(
-            @JsonProperty("isSeed") boolean isSeed,
+            @JsonProperty("is_seed") boolean isSeed,
             @JsonProperty("seeds") List<String> seeds) {
 
         return new SeedsResponse(isSeed,seeds);

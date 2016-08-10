@@ -74,7 +74,7 @@ public class DcosSeedProvider implements SeedProvider {
 
         JSONObject json = (JSONObject) JSONValue.parse(response);
 
-        boolean isSeed = (Boolean) json.get("isSeed");
+        boolean isSeed = (Boolean) json.get("is_seed");
 
         List<String> seedStrings = (json.containsKey("seeds"))
                 ? (List<String>) json.get("seeds") : Collections.emptyList();
