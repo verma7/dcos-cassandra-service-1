@@ -166,6 +166,13 @@ public class CassandraTasks implements Managed, TaskStatusProvider {
                         (RestoreSnapshotTask) entry.getValue())));
     }
 
+    public Map<String, RestoreSchemaTask> getRestoreSchemaTasks() {
+        return tasks.entrySet().stream().filter(entry -> entry.getValue()
+                .getType() == CassandraTask.TYPE.SCHEMA_RESTORE).collect
+                (Collectors.toMap(entry -> entry.getKey(), entry -> (
+                        (RestoreSchemaTask) entry.getValue())));
+    }
+
     public Map<String, CleanupTask> getCleanupTasks() {
         return tasks.entrySet().stream().filter(entry -> entry.getValue()
                 .getType() == CassandraTask.TYPE.CLEANUP).collect
@@ -273,6 +280,18 @@ public class CassandraTasks implements Managed, TaskStatusProvider {
         return task;
     }
 
+    public RestoreSchemaTask createRestoreSchemaTask(
+            CassandraDaemonTask daemon,
+            RestoreContext context) throws PersistenceException {
+        RestoreSchemaTask task = configuration.createRestoreSchemaTask(
+                daemon,
+                context);
+        synchronized (persistent) {
+            update(task);
+        }
+        return task;
+    }
+
     public CleanupTask createCleanupTask(
             CassandraDaemonTask daemon,
             CleanupContext context) throws PersistenceException {
@@ -326,9 +345,9 @@ public class CassandraTasks implements Managed, TaskStatusProvider {
             BackupContext context) throws PersistenceException {
 
         String name = BackupSchemaTask.nameForDaemon(daemon);
-        Map<String, BackupSchemaTask> snapshots = getBackupSchemaTasks();
-        if (snapshots.containsKey(name)) {
-            return snapshots.get(name);
+        Map<String, BackupSchemaTask> schemas = getBackupSchemaTasks();
+        if (schemas.containsKey(name)) {
+            return schemas.get(name);
         } else {
             return createBackupSchemaTask(daemon, context);
         }
@@ -372,6 +391,19 @@ public class CassandraTasks implements Managed, TaskStatusProvider {
             return snapshots.get(name);
         } else {
             return createRestoreSnapshotTask(daemon, context);
+        }
+    }
+
+    public RestoreSchemaTask getOrCreateRestoreSchema(
+            CassandraDaemonTask daemon,
+            RestoreContext context) throws PersistenceException {
+
+        String name = RestoreSchemaTask.nameForDaemon(daemon);
+        Map<String, RestoreSchemaTask> snapshots = getRestoreSchemaTasks();
+        if (snapshots.containsKey(name)) {
+            return snapshots.get(name);
+        } else {
+            return createRestoreSchemaTask(daemon, context);
         }
     }
 

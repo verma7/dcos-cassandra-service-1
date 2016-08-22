@@ -2,7 +2,6 @@ package com.mesosphere.dcos.cassandra.common.tasks.backup;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 import com.mesosphere.dcos.cassandra.common.CassandraProtos;
 import com.mesosphere.dcos.cassandra.common.tasks.CassandraDaemonTask;
 import com.mesosphere.dcos.cassandra.common.tasks.CassandraTask;
@@ -20,49 +19,43 @@ import static org.apache.mesos.protobuf.ResourceBuilder.reservedDisk;
 import static org.apache.mesos.protobuf.ResourceBuilder.reservedMem;
 
 /**
- * BackupSchemaTask extends CassandraTask to implement a task that
- * Schemas a set of key spaces and column families for a Cassandra cluster.
- * The task can only be launched successfully if the CassandraDaemonTask is
- * running on the targeted slave.
- * If the key spaces for the task are empty. All non-system key spaces are
- * backed up.
- * If the column families for the task are empty. All column families for the
- * indicated key spaces are backed up.
+ * Restore SchemaTask extends CassandraTask to implement a task that
+ * restores the Schemas of a set of key spaces and column families for a
+ * Cassandra cluster to a node. The task can only be launched successfully if
+ * the CassandraDaemonTask is running on the targeted slave and
+ * DownloadSnapshotTask has successfully completed.
  */
-public class BackupSchemaTask extends CassandraTask {
-
+public class RestoreSchemaTask  extends CassandraTask {
     /**
-     * The name prefix for BackupSchemaTasks.
+     * Prefix for the name of RestoreSchemaTasks.
      */
-    public static final String NAME_PREFIX = "backup-schema-";
+    public static final String NAME_PREFIX = "restore-schema-";
 
     /**
-     * Gets the name of a BackupSchemaTask for a CassandraDaemonTask.
+     * Gets the name of a RestoreSchemaTask for a CassandraDaemonTask.
      *
      * @param daemonName The name of the CassandraDaemonTask.
-     * @return The name of the BackupSchemaTask for daemonName.
+     * @return The name of the  RestoreSchemaTask for daemonName.
      */
     public static final String nameForDaemon(final String daemonName) {
         return NAME_PREFIX + daemonName;
     }
 
     /**
-     * Gets the name of a BackupSchemaTask for a CassandraDaemonTask.
+     * Gets the name of a RestoreSchemaTask for a CassandraDaemonTask.
      *
-     * @param daemon The CassandraDaemonTask for which the schema will be
-     *               taken.
-     * @return The name of the BackupschemaTask for daemon.
+     * @param daemon The CassandraDaemonTask for which the Schema will be
+     *               uploaded.
+     * @return The name of the  RestoreSchemaTask for daemon.
      */
     public static final String nameForDaemon(final CassandraDaemonTask daemon) {
         return nameForDaemon(daemon.getName());
     }
 
     /**
-     * Builder for fluent style construction and mutation of
-     * BackupschemaTasks.
+     * Builder class for fluent style construction and mutation.
      */
     public static class Builder {
-
         private String id;
         private String slaveId;
         private String hostname;
@@ -73,15 +66,15 @@ public class BackupSchemaTask extends CassandraTask {
         private double cpus;
         private int memoryMb;
         private int diskMb;
-        private BackupSchemaStatus status;
-        private List<String> keySpaces;
-        private List<String> columnFamilies;
+        private RestoreSchemaStatus status;
         private String backupName;
         private String externalLocation;
         private String s3AccessKey;
         private String s3SecretKey;
+        private String localLocation;
 
-        private Builder(BackupSchemaTask task) {
+        private Builder(RestoreSchemaTask task) {
+
             this.id = task.id;
             this.slaveId = task.slaveId;
             this.hostname = task.hostname;
@@ -93,13 +86,13 @@ public class BackupSchemaTask extends CassandraTask {
             this.memoryMb = task.memoryMb;
             this.diskMb = task.diskMb;
             this.status = task.getStatus();
-            this.columnFamilies = task.columnFamilies;
-            this.keySpaces = task.keySpaces;
             this.backupName = task.backupName;
             this.externalLocation = task.externalLocation;
             this.s3AccessKey = task.s3AccessKey;
             this.s3SecretKey = task.s3SecretKey;
+            this.localLocation = task.localLocation;
         }
+
 
         /**
          * Gets the name of the backup.
@@ -116,30 +109,8 @@ public class BackupSchemaTask extends CassandraTask {
          * @param backupName The name of the backup.
          * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setBackupName(String backupName) {
+        public RestoreSchemaTask.Builder setBackupName(String backupName) {
             this.backupName = backupName;
-            return this;
-        }
-
-        /**
-         * Gets the column families.
-         *
-         * @return A List of the names for the column families that will be
-         * backed up.
-         */
-        public List<String> getColumnFamilies() {
-            return columnFamilies;
-        }
-
-        /**
-         * Sets the column families.
-         *
-         * @param columnFamilies A List of the names of the column families
-         *                       that will be backed up.
-         * @return The Builder instance.
-         */
-        public BackupSchemaTask.Builder setColumnFamilies(List<String> columnFamilies) {
-            this.columnFamilies = columnFamilies;
             return this;
         }
 
@@ -160,28 +131,29 @@ public class BackupSchemaTask extends CassandraTask {
          *                         backup will be stored.
          * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setExternalLocation(String externalLocation) {
+        public RestoreSchemaTask.Builder setExternalLocation(String externalLocation) {
             this.externalLocation = externalLocation;
             return this;
         }
 
         /**
-         * Gets the key spaces.
+         * Gets the local location.
          *
-         * @return A List of the key spaces that will be backed up.
+         * @return The location on the host where the download will be stored.
          */
-        public List<String> getKeySpaces() {
-            return keySpaces;
+        public String getLocalLocation() {
+            return localLocation;
         }
 
         /**
-         * Sets the key spaces.
+         * Sets the local location.
          *
-         * @param keySpaces A List of the key spaces that will be backed up.
+         * @param localLocation The location on the host where the download
+         *                      will be stored.
          * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setKeySpaces(List<String> keySpaces) {
-            this.keySpaces = keySpaces;
+        public RestoreSchemaTask.Builder setLocalLocation(String localLocation) {
+            this.localLocation = localLocation;
             return this;
         }
 
@@ -200,7 +172,7 @@ public class BackupSchemaTask extends CassandraTask {
          * @param s3AccessKey The access key for the S3 bucket for the backup.
          * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setS3AccessKey(String s3AccessKey) {
+        public RestoreSchemaTask.Builder setS3AccessKey(String s3AccessKey) {
             this.s3AccessKey = s3AccessKey;
             return this;
         }
@@ -220,29 +192,51 @@ public class BackupSchemaTask extends CassandraTask {
          * @param s3SecretKey The secret key for the S3 bucket for the backup.
          * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setS3SecretKey(String s3SecretKey) {
+        public RestoreSchemaTask.Builder setS3SecretKey(String s3SecretKey) {
             this.s3SecretKey = s3SecretKey;
             return this;
         }
 
         /**
-         * Gets the status of the task.
-         *
-         * @return The status of the task.
+         * Gets the status.
+         * @return The status of the Schema restore.
          */
-        public BackupSchemaStatus getStatus() {
+        public RestoreSchemaStatus getStatus() {
             return status;
         }
 
         /**
-         * Sets the status of the task.
-         *
-         * @param status The status of the task.
-         * @return Teh Builder instance.
+         * Sets the status
+         * @param status The status of the Schema restore.
+         * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setStatus(BackupSchemaStatus status) {
+        public RestoreSchemaTask.Builder setStatus(RestoreSchemaStatus status) {
             this.status = status;
             return this;
+        }
+
+        /**
+         * Creates a new RestoreSchemaTask.
+         * @return A RestoreSchemaTask constructed from the properties of
+         * the Builder.
+         */
+        public RestoreSchemaTask build() {
+            return create(id,
+                    slaveId,
+                    hostname,
+                    executor,
+                    name,
+                    role,
+                    principal,
+                    cpus,
+                    memoryMb,
+                    diskMb,
+                    status,
+                    backupName,
+                    externalLocation,
+                    s3AccessKey,
+                    s3SecretKey,
+                    localLocation);
         }
 
         /**
@@ -260,7 +254,7 @@ public class BackupSchemaTask extends CassandraTask {
          * @param cpus The cpu shares for the task.
          * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setCpus(double cpus) {
+        public RestoreSchemaTask.Builder setCpus(double cpus) {
             this.cpus = cpus;
             return this;
         }
@@ -280,7 +274,7 @@ public class BackupSchemaTask extends CassandraTask {
          * @param diskMb The disk allocated for the task in Mb.
          * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setDiskMb(int diskMb) {
+        public RestoreSchemaTask.Builder setDiskMb(int diskMb) {
             this.diskMb = diskMb;
             return this;
         }
@@ -302,7 +296,7 @@ public class BackupSchemaTask extends CassandraTask {
          *                 be launched.
          * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setExecutor(CassandraTaskExecutor executor) {
+        public RestoreSchemaTask.Builder setExecutor(CassandraTaskExecutor executor) {
             this.executor = executor;
             return this;
         }
@@ -323,7 +317,7 @@ public class BackupSchemaTask extends CassandraTask {
          *                 launched.
          * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setHostname(String hostname) {
+        public RestoreSchemaTask.Builder setHostname(String hostname) {
             this.hostname = hostname;
             return this;
         }
@@ -343,7 +337,7 @@ public class BackupSchemaTask extends CassandraTask {
          * @param id The unique identifier of the task.
          * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setId(String id) {
+        public RestoreSchemaTask.Builder setId(String id) {
             this.id = id;
             return this;
         }
@@ -363,7 +357,7 @@ public class BackupSchemaTask extends CassandraTask {
          * @param memoryMb The memory allocation for the task in Mb.
          * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setMemoryMb(int memoryMb) {
+        public RestoreSchemaTask.Builder setMemoryMb(int memoryMb) {
             this.memoryMb = memoryMb;
             return this;
         }
@@ -383,7 +377,7 @@ public class BackupSchemaTask extends CassandraTask {
          * @param name The name of the task.
          * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setName(String name) {
+        public RestoreSchemaTask.Builder setName(String name) {
             this.name = name;
             return this;
         }
@@ -403,7 +397,7 @@ public class BackupSchemaTask extends CassandraTask {
          * @param principal The principal for the task.
          * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setPrincipal(String principal) {
+        public RestoreSchemaTask.Builder setPrincipal(String principal) {
             this.principal = principal;
             return this;
         }
@@ -423,7 +417,7 @@ public class BackupSchemaTask extends CassandraTask {
          * @param role The role for the task.
          * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setRole(String role) {
+        public RestoreSchemaTask.Builder setRole(String role) {
             this.role = role;
             return this;
         }
@@ -444,48 +438,17 @@ public class BackupSchemaTask extends CassandraTask {
          *                launched on.
          * @return The Builder instance.
          */
-        public BackupSchemaTask.Builder setSlaveId(String slaveId) {
+        public RestoreSchemaTask.Builder setSlaveId(String slaveId) {
             this.slaveId = slaveId;
             return this;
         }
-
-        /**
-         * Creates a BackupSchemaTask from the Builder.
-         *
-         * @return A BackupSchemaTask constructed from the properties of
-         * the Builder.
-         */
-        public BackupSchemaTask build() {
-
-            return create(id,
-                    slaveId,
-                    hostname,
-                    executor,
-                    name,
-                    role,
-                    principal,
-                    cpus,
-                    memoryMb,
-                    diskMb,
-                    status,
-                    keySpaces,
-                    columnFamilies,
-                    backupName,
-                    externalLocation,
-                    s3AccessKey,
-                    s3SecretKey);
-        }
-
     }
-
-    @JsonProperty("key_spaces")
-    private final List<String> keySpaces;
-
-    @JsonProperty("column_families")
-    private final List<String> columnFamilies;
 
     @JsonProperty("backup_name")
     private final String backupName;
+
+    @JsonProperty("local_location")
+    private final String localLocation;
 
     @JsonProperty("external_location")
     private final String externalLocation;
@@ -497,7 +460,7 @@ public class BackupSchemaTask extends CassandraTask {
     private final String s3SecretKey;
 
     /**
-     * Creates a new BackupSchemaTask.
+     * Creates a new RestoreSchemaTask.
      *
      * @param id               The unique identifier of the task.
      * @param slaveId          The identifier of the slave the task is running on.
@@ -510,21 +473,20 @@ public class BackupSchemaTask extends CassandraTask {
      * @param memoryMb         The memory allocated to the task in Mb.
      * @param diskMb           The disk allocated to the task in Mb.
      * @param status           The status associated with the task.
-     * @param columnFamilies   The column families that will be backed up. If
-     *                         empty all valid column families will be backed up.
-     * @param keySpaces        The keyspaces that will be backed up. If empty
      *                         all non-system key spaces will be backed up.
      * @param externalLocation The location of the S3 bucket where the backup
-     *                         will be stored.
+     *                         will is stored.
+     * @param localLocation    The location where the download will be stored on
+     *                         the local host.
      * @param backupName       The name of the backup.
      * @param s3AccessKey      The S3 access key of the bucket where the backup is
      *                         stored.
      * @param s3SecretKey      The S3 secret key of the bucket where the backup is
      *                         stored.
-     * @return A new BackupSchemaTask constructed from the parameters.
+     * @return A new RestoreSchemaTask constructed from the parameters.
      */
     @JsonCreator
-    public static BackupSchemaTask create(
+    public static RestoreSchemaTask create(
             @JsonProperty("id") String id,
             @JsonProperty("slave_id") String slaveId,
             @JsonProperty("hostname") String hostname,
@@ -535,16 +497,13 @@ public class BackupSchemaTask extends CassandraTask {
             @JsonProperty("cpus") double cpus,
             @JsonProperty("memory_mb") int memoryMb,
             @JsonProperty("disk_mb") int diskMb,
-            @JsonProperty("status") BackupSchemaStatus status,
-            @JsonProperty("key_spaces") List<String> keySpaces,
-            @JsonProperty("column_families") List<String> columnFamilies,
+            @JsonProperty("status") RestoreSchemaStatus status,
             @JsonProperty("backup_name") String backupName,
             @JsonProperty("external_location") String externalLocation,
             @JsonProperty("s3_access_key") String s3AccessKey,
-            @JsonProperty("s3_secret_key") String s3SecretKey) {
-
-
-        return new BackupSchemaTask(id,
+            @JsonProperty("s3_secret_key") String s3SecretKey,
+            @JsonProperty("local_location") String localLocation) {
+        return new RestoreSchemaTask(id,
                 slaveId,
                 hostname,
                 executor,
@@ -555,32 +514,56 @@ public class BackupSchemaTask extends CassandraTask {
                 memoryMb,
                 diskMb,
                 status,
-                keySpaces,
-                columnFamilies,
                 backupName,
                 externalLocation,
                 s3AccessKey,
-                s3SecretKey);
+                s3SecretKey,
+                localLocation);
     }
 
-    public BackupSchemaTask(String id,
-                            String slaveId,
-                            String hostname,
-                            CassandraTaskExecutor executor,
-                            String name,
-                            String role,
-                            String principal,
-                            double cpus,
-                            int memoryMb,
-                            int diskMb,
-                            BackupSchemaStatus status,
-                            List<String> keySpaces,
-                            List<String> columnFamilies,
-                            String backupName,
-                            String externalLocation,
-                            String s3AccessKey,
-                            String s3SecretKey){
-        super(TYPE.BACKUP_SCHEMA,
+    /**
+     * Constructs a new RestoreSchemaTask.
+     *
+     * @param id               The unique identifier of the task.
+     * @param slaveId          The identifier of the slave the task is running on.
+     * @param hostname         The hostname of the slave the task is running on.
+     * @param executor         The executor configuration for the task.
+     * @param name             The name of the task.
+     * @param role             The role for the task.
+     * @param principal        The principal associated with the task.
+     * @param cpus             The cpu shares allocated to the task.
+     * @param memoryMb         The memory allocated to the task in Mb.
+     * @param diskMb           The disk allocated to the task in Mb.
+     * @param status           The status associated with the task.
+     *                         all non-system key spaces will be backed up.
+     * @param externalLocation The location of the S3 bucket where the backup
+     *                         will is stored.
+     * @param localLocation    The location where the download will be stored on
+     *                         the local host.
+     * @param backupName       The name of the backup.
+     * @param s3AccessKey      The S3 access key of the bucket where the backup is
+     *                         stored.
+     * @param s3SecretKey      The S3 secret key of the bucket where the backup is
+     *                         stored.
+     */
+    protected RestoreSchemaTask(
+            String id,
+            String slaveId,
+            String hostname,
+            CassandraTaskExecutor executor,
+            String name,
+            String role,
+            String principal,
+            double cpus,
+            int memoryMb,
+            int diskMb,
+            RestoreSchemaStatus status,
+            String backupName,
+            String externalLocation,
+            String s3AccessKey,
+            String s3SecretKey,
+            String localLocation) {
+        super(TYPE.SCHEMA_RESTORE,
                 id,
                 slaveId,
                 hostname,
@@ -594,21 +577,11 @@ public class BackupSchemaTask extends CassandraTask {
                 VolumeRequirement.VolumeType.ROOT,
                 status);
 
-        this.keySpaces = ImmutableList.copyOf(keySpaces);
-        this.columnFamilies = ImmutableList.copyOf(columnFamilies);
         this.backupName = backupName;
         this.externalLocation = externalLocation;
         this.s3AccessKey = s3AccessKey;
         this.s3SecretKey = s3SecretKey;
-    }
-
-    /**
-     * Gets the column families.
-     * @return The column families that will be backed up. If empty, all
-     * column families will be backed up.
-     */
-    public List<String> getColumnFamilies() {
-        return columnFamilies;
+        this.localLocation = localLocation;
     }
 
     /**
@@ -628,15 +601,6 @@ public class BackupSchemaTask extends CassandraTask {
     }
 
     /**
-     * Gets the key spaces.
-     * @return The key spaces that will be backed up. If empty, all
-     * non-system key spaces will be backed up.
-     */
-    public List<String> getKeySpaces() {
-        return keySpaces;
-    }
-
-    /**
      * Gets the access key.
      * @return The access key for the S3 bucket where the backup will be stored.
      */
@@ -652,21 +616,30 @@ public class BackupSchemaTask extends CassandraTask {
         return s3SecretKey;
     }
 
+    /**
+     * Gets the local location.
+     * @return The location on the local host where the downloaded backup
+     * will be stored.
+     */
+    public String getLocalLocation() {
+        return localLocation;
+    }
+
     @Override
     public CassandraProtos.CassandraTaskData getTaskData() {
         return CassandraProtos.CassandraTaskData.newBuilder()
-                .setType(CassandraProtos.CassandraTaskData.TYPE.BACKUP_SCHEMA)
-                .addAllColumnFamilies(columnFamilies)
-                .addAllKeySpaces(keySpaces)
+                .setType(
+                        CassandraProtos.CassandraTaskData.TYPE.SCHEMA_RESTORE)
                 .setBackupName(backupName)
                 .setExternalLocation(externalLocation)
+                .setLocalLocation(localLocation)
                 .setS3AccessKey(s3AccessKey)
                 .setS3SecretKey(s3SecretKey)
                 .build();
     }
 
     @Override
-    public BackupSchemaTask update(Protos.Offer offer) {
+    public RestoreSchemaTask update(Protos.Offer offer) {
         return create(id,
                 offer.getSlaveId().getValue(),
                 offer.getHostname(),
@@ -677,17 +650,16 @@ public class BackupSchemaTask extends CassandraTask {
                 cpus,
                 memoryMb,
                 diskMb,
-                (BackupSchemaStatus) status,
-                keySpaces,
-                columnFamilies,
+                (RestoreSchemaStatus) status,
                 backupName,
                 externalLocation,
                 s3AccessKey,
-                s3SecretKey);
+                s3SecretKey,
+                localLocation);
     }
 
     @Override
-    public BackupSchemaTask updateId(String id) {
+    public CassandraTask updateId(String id) {
         return create(id,
                 slaveId,
                 hostname,
@@ -698,17 +670,16 @@ public class BackupSchemaTask extends CassandraTask {
                 cpus,
                 memoryMb,
                 diskMb,
-                (BackupSchemaStatus) status,
-                keySpaces,
-                columnFamilies,
+                ((RestoreSchemaStatus) status),
                 backupName,
                 externalLocation,
                 s3AccessKey,
-                s3SecretKey);
+                s3SecretKey,
+                localLocation);
     }
 
     @Override
-    public BackupSchemaTask update(Protos.TaskState state) {
+    public RestoreSchemaTask update(Protos.TaskState state) {
         return create(id,
                 slaveId,
                 hostname,
@@ -719,20 +690,17 @@ public class BackupSchemaTask extends CassandraTask {
                 cpus,
                 memoryMb,
                 diskMb,
-                ((BackupSchemaStatus) status).update(state),
-                keySpaces,
-                columnFamilies,
+                ((RestoreSchemaStatus) status).update(state),
                 backupName,
                 externalLocation,
                 s3AccessKey,
-                s3SecretKey);
-
+                s3SecretKey,
+                localLocation);
     }
 
     @Override
-    public BackupSchemaTask update(CassandraTaskStatus status) {
-
-        if (status.getType() == TYPE.BACKUP_SCHEMA &&
+    public RestoreSchemaTask update(CassandraTaskStatus status) {
+        if (status.getType() == TYPE.SCHEMA_RESTORE &&
                 status.getId().equals(id)) {
 
             return create(id,
@@ -745,13 +713,12 @@ public class BackupSchemaTask extends CassandraTask {
                     cpus,
                     memoryMb,
                     diskMb,
-                    (BackupSchemaStatus) status,
-                    keySpaces,
-                    columnFamilies,
+                    (RestoreSchemaStatus) status,
                     backupName,
                     externalLocation,
                     s3AccessKey,
-                    s3SecretKey);
+                    s3SecretKey,
+                    localLocation);
         } else {
             return this;
         }
@@ -759,16 +726,16 @@ public class BackupSchemaTask extends CassandraTask {
 
     /**
      * Gets a mutable Builder.
-     * @return A mutable Builder whose properties are set to the properties
-     * of the BackupSchemaTask.
+     * @return A Builder constructed with the properties of the task.
      */
-    /*public BackupSchemaTask.Builder mutable() {
-        return new BackupSchemaTask.Builder(this);
-    }*/
+    public RestoreSchemaTask.Builder mutable() {
+        return new RestoreSchemaTask.Builder(this);
+    }
 
     @Override
-    public BackupSchemaStatus getStatus() {
-        return (BackupSchemaStatus) status;
+    public RestoreSchemaStatus getStatus() {
+
+        return (RestoreSchemaStatus) status;
     }
 
     @Override
@@ -780,6 +747,7 @@ public class BackupSchemaTask extends CassandraTask {
     public List<Protos.Resource> getCreateResources() {
         return Collections.emptyList();
     }
+
     @Override
     public List<Protos.Resource> getLaunchResources() {
         return Arrays.asList(

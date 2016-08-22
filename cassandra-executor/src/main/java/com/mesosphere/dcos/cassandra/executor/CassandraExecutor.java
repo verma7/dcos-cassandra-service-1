@@ -25,6 +25,7 @@ import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupSchemaTask;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupUploadTask;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.DownloadSnapshotTask;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.RestoreSnapshotTask;
+import com.mesosphere.dcos.cassandra.common.tasks.backup.RestoreSchemaTask;
 import com.mesosphere.dcos.cassandra.common.tasks.cleanup.CleanupTask;
 import com.mesosphere.dcos.cassandra.common.tasks.repair.RepairTask;
 import com.mesosphere.dcos.cassandra.executor.backup.S3StorageDriver;
@@ -126,7 +127,9 @@ public class CassandraExecutor implements Executor {
                 clusterJobExecutorService.submit(new BackupSchema(
                         driver,
                         cassandra,
-                        (BackupSchemaTask) cassandraTask));
+                        (BackupSchemaTask) cassandraTask,
+                        nodeId,
+                        new S3StorageDriver()));
                 break;
 
             case BACKUP_UPLOAD:
@@ -153,6 +156,17 @@ public class CassandraExecutor implements Executor {
                 clusterJobExecutorService.submit(new RestoreSnapshot(
                         driver,
                         (RestoreSnapshotTask) cassandraTask,
+                        nodeId,
+                        cassandra.getTask().getConfig().getVersion()));
+
+                break;
+
+            case SCHEMA_RESTORE:
+
+                clusterJobExecutorService.submit(new RestoreSchema(
+                        driver,
+                        cassandra,
+                        (RestoreSchemaTask) cassandraTask,
                         nodeId,
                         cassandra.getTask().getConfig().getVersion()));
 

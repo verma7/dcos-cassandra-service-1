@@ -33,10 +33,14 @@ public interface BackupStorageDriver {
      */
     void upload(BackupContext ctx) throws IOException;
 
+    void uploadSchema(BackupContext ctx, String keyspacesSchema) throws IOException;
+
     /**
      * Downloads snapshot files from a remote location.
      * @param ctx The context of the restore.
      * @throws IOException If the download from the remote location fails.
      */
     void download(RestoreContext ctx) throws IOException;
+
+
 }

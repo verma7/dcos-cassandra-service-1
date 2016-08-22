@@ -66,6 +66,8 @@ import static org.apache.mesos.offer.ResourceUtils.*;
                 "SNAPSHOT_DOWNLOAD"),
         @JsonSubTypes.Type(value = RestoreSnapshotTask.class, name =
                 "SNAPSHOT_RESTORE"),
+        @JsonSubTypes.Type(value = RestoreSchemaTask.class, name =
+                "SCHEMA_RESTORE"),
         @JsonSubTypes.Type(value = CleanupTask.class, name =
                 "CLEANUP"),
         @JsonSubTypes.Type(value = RepairTask.class, name =
@@ -328,6 +330,36 @@ public abstract class CassandraTask {
                                 role,
                                 principal),
                         RestoreSnapshotStatus.create(
+                                Protos.TaskState.TASK_STAGING,
+                                info.getTaskId().getValue(),
+                                info.getSlaveId().getValue(),
+                                info.getExecutor().getExecutorId().getValue(),
+                                Optional.empty()),
+                        data.getBackupName(),
+                        data.getExternalLocation(),
+                        data.getS3AccessKey(),
+                        data.getS3SecretKey(),
+                        data.getLocalLocation()
+                );
+
+            case SCHEMA_RESTORE:
+                return RestoreSchemaTask.create(
+                        info.getTaskId().getValue(),
+                        info.getSlaveId().getValue(),
+                        data.getAddress(),
+                        CassandraTaskExecutor.parse(info.getExecutor()),
+                        info.getName(),
+                        role,
+                        principal,
+                        getReservedCpu(info.getResourcesList(), role,
+                                principal),
+                        (int) getReservedMem(resources,
+                                role,
+                                principal),
+                        (int) getTotalReservedDisk(resources,
+                                role,
+                                principal),
+                        RestoreSchemaStatus.create(
                                 Protos.TaskState.TASK_STAGING,
                                 info.getTaskId().getValue(),
                                 info.getSlaveId().getValue(),

@@ -1,31 +1,28 @@
 package com.mesosphere.dcos.cassandra.executor.tasks;
 
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.KeyspaceMetadata;
+import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupContext;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupSchemaStatus;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupSchemaTask;
 import com.mesosphere.dcos.cassandra.executor.CassandraDaemonProcess;
-import org.apache.cassandra.thrift.Cassandra;
+import com.mesosphere.dcos.cassandra.executor.backup.BackupStorageDriver;
 import org.apache.mesos.ExecutorDriver;
 import org.apache.mesos.Protos;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Created by varung on 8/19/16.
- */
 public class BackupSchema implements Runnable{
     private static final Logger LOGGER = LoggerFactory.getLogger(
             BackupSchema.class);
     private ExecutorDriver driver;
     private CassandraDaemonProcess daemon;
+    private final BackupContext context;
     private BackupSchemaTask cassandraTask;
+    private final BackupStorageDriver backupStorageDriver;
 
     private void sendStatus(ExecutorDriver driver,
                             Protos.TaskState state,
@@ -49,10 +46,19 @@ public class BackupSchema implements Runnable{
      */
     public BackupSchema(ExecutorDriver driver,
                         CassandraDaemonProcess daemon,
-                        BackupSchemaTask cassandraTask) {
+                        BackupSchemaTask cassandraTask,
+                        String nodeId,
+                        BackupStorageDriver backupStorageDriver) {
         this.driver = driver;
         this.daemon = daemon;
         this.cassandraTask = cassandraTask;
+        this.backupStorageDriver = backupStorageDriver;
+        context = new BackupContext();
+        context.setNodeId(nodeId);
+        context.setName(this.cassandraTask.getBackupName());
+        context.setExternalLocation(this.cassandraTask.getExternalLocation());
+        context.setS3AccessKey(this.cassandraTask.getS3AccessKey());
+        context.setS3SecretKey(this.cassandraTask.getS3SecretKey());
     }
 
     @Override
@@ -63,34 +69,34 @@ public class BackupSchema implements Runnable{
             sendStatus(driver, Protos.TaskState.TASK_RUNNING,
                     "Started taking schema backup");
 
-            //final String schemaName = this.cassandraTask.getBackupName();
-
             final List<String> nonSystemKeyspaces = daemon
                     .getNonSystemKeySpaces();
             LOGGER.info("Started taking schema for non system keyspaces: {}",
                     nonSystemKeyspaces);
 
-            TTransport tr = new TFramedTransport(new TSocket(daemon.getTask().getHostname(), 9042));
+            Cluster cluster = Cluster.builder().addContactPoint(daemon.getProbe().getEndpoint()).build();
+            StringBuilder sb = new StringBuilder();
 
-            TProtocol proto = new TBinaryProtocol(tr);
-            Cassandra.Client client = new Cassandra.Client(proto);
-            tr.open();
             for (String keyspace : nonSystemKeyspaces) {
+                if (keyspace.startsWith("system_"))
+                    continue;
                 LOGGER.info("Taking schema for keyspace: {}", keyspace);
-                //daemon.takeSchema(schemaName, keyspace);
-                //KsDef k = client.describe_keyspace(keyspace);
-                //k.toString();
+                KeyspaceMetadata ksm = cluster.getMetadata().getKeyspace(keyspace);
+                LOGGER.info(ksm.exportAsString());
+                sb.append(ksm.exportAsString()).append("\n");
             }
 
+            cluster.close();
+
+            backupStorageDriver.uploadSchema(context, sb.toString());
+            LOGGER.info(sb.toString());
 
             // Send TASK_FINISHED
             sendStatus(driver, Protos.TaskState.TASK_FINISHED,
                     "Finished taking schema for non system keyspaces: " + nonSystemKeyspaces);
-        }
-        catch (Throwable t){
+        } catch (Throwable t){
             LOGGER.error("Schema failed",t);
             sendStatus(driver, Protos.TaskState.TASK_FAILED, t.getMessage());
         }
     }
-
 }

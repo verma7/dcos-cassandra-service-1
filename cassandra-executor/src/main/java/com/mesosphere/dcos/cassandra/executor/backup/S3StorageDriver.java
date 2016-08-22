@@ -31,6 +31,7 @@ import org.xerial.snappy.SnappyInputStream;
 import org.xerial.snappy.SnappyOutputStream;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
@@ -256,6 +257,91 @@ public class S3StorageDriver implements BackupStorageDriver {
                     }
                 });
     }
+
+    @Override
+    public void uploadSchema(BackupContext ctx, String keyspacesSchema) throws IOException{
+        final String accessKey = ctx.getS3AccessKey();
+        final String secretKey = ctx.getS3SecretKey();
+        final String backupName = ctx.getName();
+        final String nodeId = ctx.getNodeId();
+
+        final AmazonS3URI backupLocationURI = new AmazonS3URI(ctx.getExternalLocation());
+        final String bucketName = backupLocationURI.getBucket();
+
+        String prefixKey = backupLocationURI.getKey() != null ? backupLocationURI.getKey() : "";
+        prefixKey = (prefixKey.length() > 0 && !prefixKey.endsWith(
+                "/")) ? prefixKey + "/" : prefixKey;
+        prefixKey += backupName;
+        final String key = prefixKey + "/" + nodeId;
+
+        final BasicAWSCredentials basicAWSCredentials = new BasicAWSCredentials(
+                accessKey, secretKey);
+        final AmazonS3Client amazonS3Client = new AmazonS3Client(
+                basicAWSCredentials);
+
+        String fileKey = key + "/" + "Schema.cql";
+        List<PartETag> partETags = new ArrayList<>();
+        final InitiateMultipartUploadRequest uploadRequest = new InitiateMultipartUploadRequest(
+                bucketName, fileKey);
+        final InitiateMultipartUploadResult uploadResult = amazonS3Client.initiateMultipartUpload(
+                uploadRequest);
+        final byte[] buffer = new byte[DEFAULT_PART_SIZE_UPLOAD];
+        BufferedInputStream inputStream = null;
+        ByteArrayOutputStream baos = null;
+        SnappyOutputStream compress = null;
+        try {
+            inputStream = new BufferedInputStream(new ByteArrayInputStream(keyspacesSchema.getBytes(StandardCharsets.UTF_8)));
+            baos = new ByteArrayOutputStream();
+            compress = new SnappyOutputStream(baos);
+
+            int chunkLength;
+            int partNum = 1;
+            while ((chunkLength = inputStream.read(buffer)) != -1) {
+                compress.write(buffer, 0, chunkLength);
+                compress.flush();
+                final byte[] bytes = baos.toByteArray();
+                final ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+                final MessageDigest md5Digester = MessageDigest.getInstance("MD5");
+                final byte[] digest = md5Digester.digest(bytes);
+                final String md5String = Base64.getEncoder().encodeToString(digest);
+                final UploadPartRequest uploadPartRequest = new UploadPartRequest()
+                        .withBucketName(bucketName)
+                        .withKey(fileKey)
+                        .withUploadId(
+                                uploadResult.getUploadId())
+                        .withPartNumber(partNum++)
+                        .withInputStream(bais)
+                        .withPartSize(bytes.length)
+                        .withMD5Digest(md5String);
+
+                final UploadPartResult uploadPartResult = amazonS3Client.uploadPart(
+                        uploadPartRequest);
+                final PartETag partETag = uploadPartResult.getPartETag();
+                if (!partETag.getETag().equals(new String(
+                        Hex.encodeHex(digest)))) {
+                    LOGGER.error("Error matching hex");
+                }
+                partETags.add(partETag);
+            }
+
+            final CompleteMultipartUploadRequest completeMultipartUploadRequest = new CompleteMultipartUploadRequest(
+                    bucketName, fileKey,
+                    uploadResult.getUploadId(), partETags);
+            amazonS3Client.completeMultipartUpload(
+                    completeMultipartUploadRequest);
+        } catch (Exception e) {
+            LOGGER.error("Error uploading file: {}", e);
+            amazonS3Client.abortMultipartUpload(
+                    new AbortMultipartUploadRequest(
+                            bucketName, fileKey,
+                            uploadResult.getUploadId()));
+        } finally {
+            IOUtils.closeQuietly(inputStream);
+            IOUtils.closeQuietly(compress);
+            IOUtils.closeQuietly(baos);
+        }
+    }
+
 
     /**
      * Filters unwanted keyspaces and column families

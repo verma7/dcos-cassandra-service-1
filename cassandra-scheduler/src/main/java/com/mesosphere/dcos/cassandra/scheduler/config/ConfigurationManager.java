@@ -482,6 +482,36 @@ public class ConfigurationManager implements Managed {
                         "/data/temp_" + context.getName());
     }
 
+    public RestoreSchemaTask createRestoreSchemaTask(
+            CassandraDaemonTask daemon,
+            RestoreContext context) {
+        String name = RestoreSchemaTask.nameForDaemon(daemon);
+        String id = name + "_" + UUID.randomUUID().toString();
+
+        return RestoreSchemaTask.create(
+                id,
+                daemon.getSlaveId(),
+                daemon.getHostname(),
+                daemon.getExecutor(),
+                name,
+                daemon.getRole(),
+                daemon.getPrincipal(),
+                clusterTaskConfig.getCpus(),
+                clusterTaskConfig.getMemoryMb(),
+                clusterTaskConfig.getDiskMb(),
+                RestoreSchemaStatus.create(Protos.TaskState.TASK_STAGING,
+                        id,
+                        daemon.getSlaveId(),
+                        name,
+                        Optional.empty()),
+                context.getName(),
+                context.getExternalLocation(),
+                context.getS3AccessKey(),
+                context.getS3SecretKey(),
+                cassandraConfig.getVolume().getPath() +
+                        "/data/temp_" + context.getName());
+    }
+
     public BackupUploadTask createBackupUploadTask(
             CassandraDaemonTask daemon,
             BackupContext context) {

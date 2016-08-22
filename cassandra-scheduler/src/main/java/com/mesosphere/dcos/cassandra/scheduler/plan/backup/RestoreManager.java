@@ -2,7 +2,6 @@ package com.mesosphere.dcos.cassandra.scheduler.plan.backup;
 
 import com.google.inject.Inject;
 import com.mesosphere.dcos.cassandra.common.serialization.Serializer;
-import com.mesosphere.dcos.cassandra.common.tasks.CassandraTask;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.RestoreContext;
 import com.mesosphere.dcos.cassandra.scheduler.offer.ClusterTaskOfferRequirementProvider;
 import com.mesosphere.dcos.cassandra.scheduler.persistence.PersistenceException;
@@ -29,6 +28,7 @@ public class RestoreManager {
     private final PersistentReference<RestoreContext> persistentContext;
     private volatile RestoreContext context = null;
     private volatile DownloadSnapshotPhase download = null;
+    private volatile RestoreSchemaPhase schema = null;
     private volatile RestoreSnapshotPhase restore = null;
 
     @Inject
@@ -50,6 +50,10 @@ public class RestoreManager {
                 // Recovering from failure
                 if (context != null) {
                     this.download = new DownloadSnapshotPhase(
+                            context,
+                            cassandraTasks,
+                            provider);
+                    this.schema = new RestoreSchemaPhase(
                             context,
                             cassandraTasks,
                             provider);
@@ -79,12 +83,20 @@ public class RestoreManager {
                         cassandraTasks.remove(name);
                     }
                     for(String name:
+                            cassandraTasks.getRestoreSchemaTasks().keySet()){
+                        cassandraTasks.remove(name);
+                    }
+                    for(String name:
                             cassandraTasks.getRestoreSnapshotTasks().keySet()){
                         cassandraTasks.remove(name);
                     }
                 }
                 persistentContext.store(context);
                 this.download = new DownloadSnapshotPhase(
+                        context,
+                        cassandraTasks,
+                        provider);
+                this.schema = new RestoreSchemaPhase(
                         context,
                         cassandraTasks,
                         provider);
@@ -135,6 +147,7 @@ public class RestoreManager {
 
         return (context != null &&
                 download != null && download.isComplete() &&
+                schema != null && restore.isComplete() &&
                 restore != null && restore.isComplete());
     }
 
@@ -142,7 +155,7 @@ public class RestoreManager {
         if (context == null) {
             return Collections.emptyList();
         } else {
-            return Arrays.asList(download, restore);
+            return Arrays.asList(download, schema, restore);
         }
     }
 }

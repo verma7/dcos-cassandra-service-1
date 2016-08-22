@@ -57,11 +57,11 @@ public class BackupManager {
                             backupContext,
                             cassandraTasks,
                             provider);
-                    this.schema = new BackupSchemaPhase(
+                    this.upload = new UploadBackupPhase(
                             backupContext,
                             cassandraTasks,
                             provider);
-                    this.upload = new UploadBackupPhase(
+                    this.schema = new BackupSchemaPhase(
                             backupContext,
                             cassandraTasks,
                             provider);
@@ -99,11 +99,11 @@ public class BackupManager {
                         context,
                         cassandraTasks,
                         provider);
-                this.schema = new BackupSchemaPhase(
+                this.upload = new UploadBackupPhase(
                         context,
                         cassandraTasks,
                         provider);
-                this.upload = new UploadBackupPhase(
+                this.schema = new BackupSchemaPhase(
                         context,
                         cassandraTasks,
                         provider);
@@ -112,7 +112,6 @@ public class BackupManager {
                 LOGGER.error(
                         "Error storing backup context into persistence store. Reason: ",
                         e);
-
             }
         }
     }
@@ -148,6 +147,7 @@ public class BackupManager {
 
         return (backupContext != null &&
                 backup != null && backup.isComplete() &&
+                schema != null && schema.isComplete() &&
                 upload != null && upload.isComplete());
     }
 
@@ -155,7 +155,7 @@ public class BackupManager {
         if (backupContext == null) {
             return Collections.emptyList();
         } else {
-            return Arrays.asList(backup, upload);
+            return Arrays.asList(backup, upload, schema);
         }
     }
 

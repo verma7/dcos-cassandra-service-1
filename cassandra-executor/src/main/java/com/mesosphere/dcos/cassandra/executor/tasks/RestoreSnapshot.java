@@ -99,14 +99,17 @@ public class RestoreSnapshot implements Runnable {
                     libProcessAddress) ? InetAddress.getLocalHost().getHostAddress() : libProcessAddress;
 
             for (File keyspace : keyspaces) {
+
                 final File[] columnFamilies = keyspace.listFiles();
 
                 final String keyspaceName = keyspace.getName();
+                if (keyspaceName.equals("Schema.cql"))
+                    continue;
                 LOGGER.info("Going to bulk load keyspace: {}", keyspaceName);
-
 
                 for (File columnFamily : columnFamilies) {
                     final String columnFamilyName = columnFamily.getName();
+
                     LOGGER.info(
                             "Bulk loading... keyspace: {} column family: {}",
                             keyspaceName, columnFamilyName);
@@ -153,8 +156,7 @@ public class RestoreSnapshot implements Runnable {
             sendStatus(driver, Protos.TaskState.TASK_FINISHED, message);
         } catch (Throwable t) {
             // Send TASK_FAILED
-            final String errorMessage = "Failed restoring snapshot. Reason: "
-                    + t;
+            final String errorMessage = "Failed restoring snapshot. Reason: " + t;
             LOGGER.error(errorMessage);
             sendStatus(driver, Protos.TaskState.TASK_FAILED, errorMessage);
         }

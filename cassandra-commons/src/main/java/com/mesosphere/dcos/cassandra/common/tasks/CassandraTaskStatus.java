@@ -20,10 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.mesosphere.dcos.cassandra.common.CassandraProtos;
-import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupSnapshotStatus;
-import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupUploadStatus;
-import com.mesosphere.dcos.cassandra.common.tasks.backup.DownloadSnapshotStatus;
-import com.mesosphere.dcos.cassandra.common.tasks.backup.RestoreSnapshotStatus;
+import com.mesosphere.dcos.cassandra.common.tasks.backup.*;
 import com.mesosphere.dcos.cassandra.common.tasks.cleanup.CleanupStatus;
 import com.mesosphere.dcos.cassandra.common.tasks.repair.RepairStatus;
 import com.mesosphere.dcos.cassandra.common.util.JsonUtils;
@@ -52,12 +49,16 @@ import java.util.Optional;
                 "CASSANDRA_DAEMON"),
         @JsonSubTypes.Type(value = BackupSnapshotStatus.class, name =
                 "BACKUP_SNAPSHOT"),
+        @JsonSubTypes.Type(value = BackupSchemaStatus.class, name =
+                "BACKUP_SCHEMA"),
         @JsonSubTypes.Type(value = BackupUploadStatus.class, name =
                 "BACKUP_UPLOAD"),
         @JsonSubTypes.Type(value = DownloadSnapshotStatus.class, name =
                 "SNAPSHOT_DOWNLOAD"),
         @JsonSubTypes.Type(value = RestoreSnapshotStatus.class, name =
                 "SNAPSHOT_RESTORE"),
+        @JsonSubTypes.Type(value = RestoreSchemaStatus.class, name =
+                "SCHEMA_RESTORE"),
         @JsonSubTypes.Type(value = CleanupStatus.class, name =
                 "CLEANUP"),
         @JsonSubTypes.Type(value = RepairStatus.class, name =
@@ -151,6 +152,17 @@ public abstract class CassandraTaskStatus {
                                         status.getMessage()) :
                                 Optional.empty());
 
+            case BACKUP_SCHEMA:
+                return BackupSchemaStatus.create(
+                        status.getState(),
+                        status.getTaskId().getValue(),
+                        status.getSlaveId().getValue(),
+                        status.getExecutorId().getValue(),
+                        (status.hasMessage()) ?
+                                Optional.of(
+                                        status.getMessage()) :
+                                Optional.empty());
+
             case BACKUP_UPLOAD:
                 return BackupUploadStatus.create(
                         status.getState(),
@@ -176,6 +188,18 @@ public abstract class CassandraTaskStatus {
 
             case SNAPSHOT_RESTORE:
                 return RestoreSnapshotStatus.create(
+                        status.getState(),
+                        status.getTaskId().getValue(),
+                        status.getSlaveId().getValue(),
+                        status.getExecutorId().getValue(),
+                        (status.hasMessage()) ?
+                                Optional.of(
+                                        status.getMessage()) :
+                                Optional.empty()
+                );
+
+            case SCHEMA_RESTORE:
+                return RestoreSchemaStatus.create(
                         status.getState(),
                         status.getTaskId().getValue(),
                         status.getSlaveId().getValue(),
