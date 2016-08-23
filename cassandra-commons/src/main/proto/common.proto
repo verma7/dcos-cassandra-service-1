@@ -58,6 +58,8 @@ message CassandraTaskData{
         SNAPSHOT_RESTORE = 5;
         CLEANUP = 6;
         REPAIR = 7;
+        BACKUP_SCHEMA = 8;
+        SCHEMA_RESTORE = 9;
     }
 
     required TYPE type = 1;

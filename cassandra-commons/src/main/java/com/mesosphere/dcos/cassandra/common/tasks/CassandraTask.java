@@ -58,6 +58,8 @@ import static org.apache.mesos.offer.ResourceUtils.*;
                 name = "CASSANDRA_DAEMON"),
         @JsonSubTypes.Type(value = BackupSnapshotTask.class, name =
                 "BACKUP_SNAPSHOT"),
+        @JsonSubTypes.Type(value = BackupSchemaTask.class, name =
+                "BACKUP_SCHEMA"),
         @JsonSubTypes.Type(value = BackupUploadTask.class, name =
                 "BACKUP_UPLOAD"),
         @JsonSubTypes.Type(value = DownloadSnapshotTask.class, name =
@@ -114,6 +116,10 @@ public abstract class CassandraTask {
          */
         BACKUP_SNAPSHOT,
         /**
+         * Task that backs up schema
+         */
+        BACKUP_SCHEMA,
+        /**
          * Task that uploads column families to remote storage.
          */
         BACKUP_UPLOAD,
@@ -125,6 +131,10 @@ public abstract class CassandraTask {
          * Task that restores column families to a node.
          */
         SNAPSHOT_RESTORE,
+        /**
+         * Task that restores schema
+         */
+        SCHEMA_RESTORE,
         /**
          * Task that performs cleanup on a node.
          */
@@ -195,6 +205,37 @@ public abstract class CassandraTask {
                                 role,
                                 principal),
                         BackupSnapshotStatus.create(
+                                Protos.TaskState.TASK_STAGING,
+                                info.getTaskId().getValue(),
+                                info.getSlaveId().getValue(),
+                                info.getExecutor().getExecutorId().getValue(),
+                                Optional.empty()),
+                        data.getKeySpacesList(),
+                        data.getColumnFamiliesList(),
+                        data.getBackupName(),
+                        data.getExternalLocation(),
+                        data.getS3AccessKey(),
+                        data.getS3SecretKey()
+                );
+
+            case BACKUP_SCHEMA:
+                return BackupSchemaTask.create(
+                        info.getTaskId().getValue(),
+                        info.getSlaveId().getValue(),
+                        data.getAddress(),
+                        CassandraTaskExecutor.parse(info.getExecutor()),
+                        info.getName(),
+                        role,
+                        principal,
+                        getReservedCpu(info.getResourcesList(), role,
+                                principal),
+                        (int) getReservedMem(resources,
+                                role,
+                                principal),
+                        (int) getTotalReservedDisk(resources,
+                                role,
+                                principal),
+                        BackupSchemaStatus.create(
                                 Protos.TaskState.TASK_STAGING,
                                 info.getTaskId().getValue(),
                                 info.getSlaveId().getValue(),

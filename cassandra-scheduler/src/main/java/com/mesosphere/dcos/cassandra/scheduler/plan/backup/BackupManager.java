@@ -31,6 +31,7 @@ public class BackupManager {
     private final ClusterTaskOfferRequirementProvider provider;
     private final PersistentReference<BackupContext> persistentBackupContext;
     private volatile BackupSnapshotPhase backup = null;
+    private volatile BackupSchemaPhase schema = null;
     private volatile UploadBackupPhase upload = null;
     private volatile BackupContext backupContext = null;
 
@@ -53,6 +54,10 @@ public class BackupManager {
                 // Recovering from failure
                 if (backupContext != null) {
                     this.backup = new BackupSnapshotPhase(
+                            backupContext,
+                            cassandraTasks,
+                            provider);
+                    this.schema = new BackupSchemaPhase(
                             backupContext,
                             cassandraTasks,
                             provider);
@@ -82,12 +87,19 @@ public class BackupManager {
                     for (String name : cassandraTasks.getBackupSnapshotTasks().keySet()) {
                         cassandraTasks.remove(name);
                     }
+                    for (String name : cassandraTasks.getBackupSchemaTasks().keySet()) {
+                        cassandraTasks.remove(name);
+                    }
                     for (String name : cassandraTasks.getBackupUploadTasks().keySet()) {
                         cassandraTasks.remove(name);
                     }
                 }
                 persistentBackupContext.store(context);
                 this.backup = new BackupSnapshotPhase(
+                        context,
+                        cassandraTasks,
+                        provider);
+                this.schema = new BackupSchemaPhase(
                         context,
                         cassandraTasks,
                         provider);

@@ -138,6 +138,13 @@ public class CassandraTasks implements Managed, TaskStatusProvider {
                         (BackupSnapshotTask) entry.getValue())));
     }
 
+    public Map<String, BackupSchemaTask> getBackupSchemaTasks() {
+        return tasks.entrySet().stream().filter(entry -> entry.getValue()
+                .getType() == CassandraTask.TYPE.BACKUP_SCHEMA).collect
+                (Collectors.toMap(entry -> entry.getKey(), entry -> (
+                        (BackupSchemaTask) entry.getValue())));
+    }
+
     public Map<String, BackupUploadTask> getBackupUploadTasks() {
         return tasks.entrySet().stream().filter(entry -> entry.getValue()
                 .getType() == CassandraTask.TYPE.BACKUP_UPLOAD).collect
@@ -207,6 +214,19 @@ public class CassandraTasks implements Managed, TaskStatusProvider {
             BackupContext context) throws PersistenceException {
 
         BackupSnapshotTask task = configuration.createBackupSnapshotTask(
+                daemon,
+                context);
+        synchronized (persistent) {
+            update(task);
+        }
+        return task;
+    }
+
+    public BackupSchemaTask createBackupSchemaTask(
+            CassandraDaemonTask daemon,
+            BackupContext context) throws PersistenceException {
+
+        BackupSchemaTask task = configuration.createBackupSchemaTask(
                 daemon,
                 context);
         synchronized (persistent) {
@@ -297,6 +317,20 @@ public class CassandraTasks implements Managed, TaskStatusProvider {
             return snapshots.get(name);
         } else {
             return createBackupSnapshotTask(daemon, context);
+        }
+
+    }
+
+    public BackupSchemaTask getOrCreateBackupSchema(
+            CassandraDaemonTask daemon,
+            BackupContext context) throws PersistenceException {
+
+        String name = BackupSchemaTask.nameForDaemon(daemon);
+        Map<String, BackupSchemaTask> snapshots = getBackupSchemaTasks();
+        if (snapshots.containsKey(name)) {
+            return snapshots.get(name);
+        } else {
+            return createBackupSchemaTask(daemon, context);
         }
 
     }

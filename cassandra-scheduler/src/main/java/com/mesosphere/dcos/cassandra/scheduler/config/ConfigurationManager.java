@@ -392,6 +392,36 @@ public class ConfigurationManager implements Managed {
                 context.getS3SecretKey());
     }
 
+    public BackupSchemaTask createBackupSchemaTask(
+            CassandraDaemonTask daemon,
+            BackupContext context) {
+        String name = BackupSchemaTask.nameForDaemon(daemon);
+        String id = name + "_" + UUID.randomUUID().toString();
+
+        return BackupSchemaTask.create(
+                id,
+                daemon.getSlaveId(),
+                daemon.getHostname(),
+                daemon.getExecutor(),
+                name,
+                daemon.getRole(),
+                daemon.getPrincipal(),
+                clusterTaskConfig.getCpus(),
+                clusterTaskConfig.getMemoryMb(),
+                clusterTaskConfig.getDiskMb(),
+                BackupSchemaStatus.create(Protos.TaskState.TASK_STAGING,
+                        id,
+                        daemon.getSlaveId(),
+                        name,
+                        Optional.empty()),
+                Lists.newArrayList(),
+                Lists.newArrayList(),
+                context.getName(),
+                context.getExternalLocation(),
+                context.getS3AccessKey(),
+                context.getS3SecretKey());
+    }
+
     public DownloadSnapshotTask createDownloadSnapshotTask(
             CassandraDaemonTask daemon,
             RestoreContext context) {

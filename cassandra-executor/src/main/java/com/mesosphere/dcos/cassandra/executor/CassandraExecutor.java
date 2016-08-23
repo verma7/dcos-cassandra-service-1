@@ -21,6 +21,7 @@ import com.mesosphere.dcos.cassandra.common.tasks.CassandraDaemonTask;
 import com.mesosphere.dcos.cassandra.common.tasks.CassandraMode;
 import com.mesosphere.dcos.cassandra.common.tasks.CassandraTask;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupSnapshotTask;
+import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupSchemaTask;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupUploadTask;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.DownloadSnapshotTask;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.RestoreSnapshotTask;
@@ -119,6 +120,13 @@ public class CassandraExecutor implements Executor {
                         driver,
                         cassandra,
                         (BackupSnapshotTask) cassandraTask));
+                break;
+
+            case BACKUP_SCHEMA:
+                clusterJobExecutorService.submit(new BackupSchema(
+                        driver,
+                        cassandra,
+                        (BackupSchemaTask) cassandraTask));
                 break;
 
             case BACKUP_UPLOAD:
