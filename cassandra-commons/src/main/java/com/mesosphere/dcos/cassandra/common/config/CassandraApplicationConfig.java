@@ -124,6 +124,34 @@ public class CassandraApplicationConfig {
     public static final String ENABLE_USER_DEFINED_FUNCTIONS_KEY = "enable_user_defined_functions";
     public static final String WINDOWS_TIMER_INTERVAL_KEY = "windows_timer_interval";
 
+    public static final String  ROLES_UPDATE_INTERVAL_IN_MS_KEY = "roles_update_interval_in_ms";
+    public static final String  PERMISSIONS_UPDATE_INTERVAL_IN_MS_KEY = "permissions_update_interval_in_ms";
+    public static final String  KEY_CACHE_KEYS_TO_SAVE_KEY = "key_cache_keys_to_save";
+    public static final String  ROW_CACHE_KEYS_TO_SAVE_KEY = "row_cache_keys_to_save";
+    public static final String  COUNTER_CACHE_KEYS_TO_SAVE_KEY = "counter_cache_keys_to_save";
+    public static final String  FILE_CACHE_SIZE_IN_MB_KEY = "file_cache_size_in_mb";
+    public static final String  MEMTABLE_HEAP_SPACE_IN_MB_KEY = "memtable_heap_space_in_mb";
+    public static final String  MEMTABLE_OFFHEAP_SPACE_IN_MB_KEY = "memtable_offheap_space_in_mb";
+    public static final String  MEMTABLE_CLEANUP_THRESHOLD_KEY = "memtable_cleanup_threshold";
+    public static final String  COMMITLOG_TOTAL_SPACE_IN_MB_KEY = "commitlog_total_space_in_mb";
+    public static final String  MEMTABLE_FLUSH_WRITERS_KEY = "memtable_flush_writers";
+    public static final String  LISTEN_ON_BROADCAST_ADDRESS_KEY = "listen_on_broadcast_address";
+    public static final String  INTERNODE_AUTHENTICATOR_KEY = "internode_authenticator";
+    public static final String  NATIVE_TRANSPORT_MAX_THREADS_KEY = "native_transport_max_threads";
+    public static final String  NATIVE_TRANSPORT_MAX_FRAME_SIZE_IN_MB_KEY = "native_transport_max_frame_size_in_mb";
+    public static final String  NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_KEY = "native_transport_max_concurrent_connections";
+    public static final String  NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_PER_IP_KEY = "native_transport_max_concurrent_connections_per_ip";
+    public static final String  RPC_MIN_THREADS_KEY = "rpc_min_threads";
+    public static final String  RPC_MAX_THREADS_KEY = "rpc_max_threads";
+    public static final String  RPC_SEND_BUFF_SIZE_IN_BYTES_KEY = "rpc_send_buff_size_in_bytes";
+    public static final String  RPC_RECV_BUFF_SIZE_IN_BYTES_KEY = "rpc_recv_buff_size_in_bytes";
+    public static final String  CONCURRENT_COMPACTORS_KEY = "concurrent_compactors";
+    public static final String  STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC_KEY = "stream_throughput_outbound_megabits_per_sec";
+    public static final String  INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC_KEY = "inter_dc_stream_throughput_outbound_megabits_per_sec";
+    public static final String  STREAMING_SOCKET_TIMEOUT_IN_MS_KEY = "streaming_socket_timeout_in_ms";
+    public static final String  PHI_CONVICT_THRESHOLD_KEY = "phi_convict_threshold";
+    public static final String  GC_WARN_THRESHOLD_IN_MS_KEY = "gc_warn_threshold_in_ms";
+
     public static final String DEFAULT_CLUSTER_NAME = "Test Cluster";
     public static final int DEFAULT_NUM_TOKENS = 256;
     public static final boolean DEFAULT_HINTED_HANDOFF_ENABLED = true;
@@ -221,6 +249,34 @@ public class CassandraApplicationConfig {
                     "optional", false,
                     "keystore", "conf/.keystore",
                     "keystore_password", "cassandra");
+
+    public static final int DEFAULT_ROLES_UPDATE_INTERVAL_IN_MS = 1000;
+    public static final int DEFAULT_PERMISSIONS_UPDATE_INTERVAL_IN_MS = 1000;
+    public static final int DEFAULT_KEY_CACHE_KEYS_TO_SAVE = 100;
+    public static final int DEFAULT_ROW_CACHE_KEYS_TO_SAVE = 100;
+    public static final int DEFAULT_COUNTER_CACHE_KEYS_TO_SAVE = 100;
+    public static final int DEFAULT_FILE_CACHE_SIZE_IN_MB = 512;
+    public static final int DEFAULT_MEMTABLE_HEAP_SPACE_IN_MB = 2048;
+    public static final int DEFAULT_MEMTABLE_OFFHEAP_SPACE_IN_MB = 2048;
+    public static final double DEFAULT_MEMTABLE_CLEANUP_THRESHOLD = 0.11;
+    public static final int DEFAULT_COMMITLOG_TOTAL_SPACE_IN_MB = 8192;
+    public static final int DEFAULT_MEMTABLE_FLUSH_WRITERS = 8;
+    public static final boolean DEFAULT_LISTEN_ON_BROADCAST_ADDRESS = false;
+    public static final String DEFAULT_INTERNODE_AUTHENTICATOR = "org.apache.cassandra.auth.AllowAllInternodeAuthenticator";
+    public static final int DEFAULT_NATIVE_TRANSPORT_MAX_THREADS = 128;
+    public static final int DEFAULT_NATIVE_TRANSPORT_MAX_FRAME_SIZE_IN_MB = 256;
+    public static final int DEFAULT_NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS = -1;
+    public static final int DEFAULT_NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_PER_IP = -1;
+    public static final int DEFAULT_RPC_MIN_THREADS = 16;
+    public static final int DEFAULT_RPC_MAX_THREADS = 2048;
+    public static final int DEFAULT_RPC_SEND_BUFF_SIZE_IN_BYTES = 0;
+    public static final int DEFAULT_RPC_RECV_BUFF_SIZE_IN_BYTES = 0;
+    public static final int DEFAULT_CONCURRENT_COMPACTORS = 1;
+    public static final int DEFAULT_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC = 200;
+    public static final int DEFAULT_INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC = 200;
+    public static final int DEFAULT_STREAMING_SOCKET_TIMEOUT_IN_MS = 3600000;
+    public static final int DEFAULT_PHI_CONVICT_THRESHOLD = 8;
+    public static final int DEFAULT_GC_WARN_THRESHOLD_IN_MS = 1000;
 
     /**
      * Parses a configuration from bytes.
@@ -367,9 +423,36 @@ public class CassandraApplicationConfig {
             @JsonProperty(TRACETYPE_QUERY_TTL_KEY) final int tracetypeQueryTtl,
             @JsonProperty(TRACETYPE_REPAIR_TTL_KEY) final int tracetypeRepairTtl,
             @JsonProperty(ENABLE_USER_DEFINED_FUNCTIONS_KEY) final boolean enableUserDefinedFunctions,
-            @JsonProperty(WINDOWS_TIMER_INTERVAL_KEY) final int windowsTimerInterval) {
+            @JsonProperty(WINDOWS_TIMER_INTERVAL_KEY) final int windowsTimerInterval,
+            @JsonProperty(ROLES_UPDATE_INTERVAL_IN_MS_KEY) final int rolesUpdateIntervalInMs,
+            @JsonProperty(PERMISSIONS_UPDATE_INTERVAL_IN_MS_KEY) final int permissionsUpdateIntervalInMs,
+            @JsonProperty(KEY_CACHE_KEYS_TO_SAVE_KEY) final int keyCacheKeysToSave,
+            @JsonProperty(ROW_CACHE_KEYS_TO_SAVE_KEY) final int rowCacheKeysToSave,
+            @JsonProperty(COUNTER_CACHE_KEYS_TO_SAVE_KEY) final int counterCacheKeysToSave,
+            @JsonProperty(FILE_CACHE_SIZE_IN_MB_KEY) final int fileCacheSizeInMb,
+            @JsonProperty(MEMTABLE_HEAP_SPACE_IN_MB_KEY) final int memtableHeapSpaceInMb,
+            @JsonProperty(MEMTABLE_OFFHEAP_SPACE_IN_MB_KEY) final int memtableOffheapSpaceInMb,
+            @JsonProperty(MEMTABLE_CLEANUP_THRESHOLD_KEY) final double metableCleanupThreshold,
+            @JsonProperty(COMMITLOG_TOTAL_SPACE_IN_MB_KEY) final int commitLogTotalSpaceInMb,
+            @JsonProperty(MEMTABLE_FLUSH_WRITERS_KEY) final int memtableFlushWritersKey,
+            @JsonProperty(LISTEN_ON_BROADCAST_ADDRESS_KEY) final boolean listenOnBroadcastAddress,
+            @JsonProperty(INTERNODE_AUTHENTICATOR_KEY) final String internodeAuthenticator,
+            @JsonProperty(NATIVE_TRANSPORT_MAX_THREADS_KEY) final int nativeTransportMaxThreads,
+            @JsonProperty(NATIVE_TRANSPORT_MAX_FRAME_SIZE_IN_MB_KEY) final int nativeTransportMaxFrameSizeInMb,
+            @JsonProperty(NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_KEY) final int nativeTransportMaxConcurrentConnections,
+            @JsonProperty(NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_PER_IP_KEY) final int nativeTransportMaxConcurrentConnectionsPerIpKey,
+            @JsonProperty(RPC_MIN_THREADS_KEY) final int rpcMinThreads,
+            @JsonProperty(RPC_MAX_THREADS_KEY) final int rpcMaxThreads,
+            @JsonProperty(RPC_SEND_BUFF_SIZE_IN_BYTES_KEY) final int rpcSendBuffSizeInBytes,
+            @JsonProperty(RPC_RECV_BUFF_SIZE_IN_BYTES_KEY) final int rpcRecvBuffSizeInBytes,
+            @JsonProperty(CONCURRENT_COMPACTORS_KEY) final int concurrentCompactors,
+            @JsonProperty(STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC_KEY) final int streamThroughputOutboundMegabitsPerSec,
+            @JsonProperty(INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC_KEY) final int interDcStreamThroughputOutboundMegabitsPerSec,
+            @JsonProperty(STREAMING_SOCKET_TIMEOUT_IN_MS_KEY) final int streamingSocketTimeoutInMs,
+            @JsonProperty(PHI_CONVICT_THRESHOLD_KEY) final int phiConvictThreshold,
+            @JsonProperty(GC_WARN_THRESHOLD_IN_MS_KEY) final int gcWarnThresholdInMs ) {
 
-        return new CassandraApplicationConfig(clusterName,
+                return new CassandraApplicationConfig(clusterName,
                 numTokens,
                 hintedHandoffEnabled,
                 maxHintWindowInMs,
@@ -443,7 +526,34 @@ public class CassandraApplicationConfig {
                 tracetypeQueryTtl,
                 tracetypeRepairTtl,
                 enableUserDefinedFunctions,
-                windowsTimerInterval);
+                windowsTimerInterval,
+                rolesUpdateIntervalInMs,
+                permissionsUpdateIntervalInMs,
+                keyCacheKeysToSave,
+                rowCacheKeysToSave,
+                counterCacheKeysToSave,
+                fileCacheSizeInMb,
+                memtableHeapSpaceInMb,
+                memtableOffheapSpaceInMb,
+                metableCleanupThreshold,
+                commitLogTotalSpaceInMb,
+                memtableFlushWritersKey,
+                listenOnBroadcastAddress,
+                internodeAuthenticator,
+                nativeTransportMaxThreads,
+                nativeTransportMaxFrameSizeInMb,
+                nativeTransportMaxConcurrentConnections,
+                nativeTransportMaxConcurrentConnectionsPerIpKey,
+                rpcMinThreads,
+                rpcMaxThreads,
+                rpcSendBuffSizeInBytes,
+                rpcRecvBuffSizeInBytes,
+                concurrentCompactors,
+                streamThroughputOutboundMegabitsPerSec,
+                interDcStreamThroughputOutboundMegabitsPerSec,
+                streamingSocketTimeoutInMs,
+                phiConvictThreshold,
+                gcWarnThresholdInMs);
 
     }
 
@@ -602,6 +712,61 @@ public class CassandraApplicationConfig {
     @JsonProperty(WINDOWS_TIMER_INTERVAL_KEY)
     private final int windowsTimerInterval;
 
+    @JsonProperty(ROLES_UPDATE_INTERVAL_IN_MS_KEY)
+    private final int rolesUpdateIntervalInMs;
+    @JsonProperty(PERMISSIONS_UPDATE_INTERVAL_IN_MS_KEY)
+    private final int permissionsUpdateIntervalInMs;
+    @JsonProperty(KEY_CACHE_KEYS_TO_SAVE_KEY)
+    private final int keyCacheKeysToSave;
+    @JsonProperty(ROW_CACHE_KEYS_TO_SAVE_KEY)
+    private final int rowCacheKeysToSave;
+    @JsonProperty(COUNTER_CACHE_KEYS_TO_SAVE_KEY)
+    private final int counterCacheKeysToSave;
+    @JsonProperty(FILE_CACHE_SIZE_IN_MB_KEY)
+    private final int fileCacheSizeInMb;
+    @JsonProperty(MEMTABLE_HEAP_SPACE_IN_MB_KEY)
+    private final int memtableHeapSpaceInMb;
+    @JsonProperty(MEMTABLE_OFFHEAP_SPACE_IN_MB_KEY)
+    private final int memtableOffheapSpaceInMb;
+    @JsonProperty(MEMTABLE_CLEANUP_THRESHOLD_KEY)
+    private final double metableCleanupThreshold;
+    @JsonProperty(COMMITLOG_TOTAL_SPACE_IN_MB_KEY)
+    private final int commitLogTotalSpaceInMb;
+    @JsonProperty(MEMTABLE_FLUSH_WRITERS_KEY)
+    private final int memtableFlushWritersKey;
+    @JsonProperty(LISTEN_ON_BROADCAST_ADDRESS_KEY)
+    private final boolean listenOnBroadcastAddress;
+    @JsonProperty(INTERNODE_AUTHENTICATOR_KEY)
+    private final String internodeAuthenticator;
+    @JsonProperty(NATIVE_TRANSPORT_MAX_THREADS_KEY)
+    private final int nativeTransportMaxThreads;
+    @JsonProperty(NATIVE_TRANSPORT_MAX_FRAME_SIZE_IN_MB_KEY)
+    private final int nativeTransportMaxFrameSizeInMb;
+    @JsonProperty(NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_KEY)
+    private final int nativeTransportMaxConcurrentConnections;
+    @JsonProperty(NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_PER_IP_KEY)
+    private final int nativeTransportMaxConcurrentConnectionsPerIpKey;
+    @JsonProperty(RPC_MIN_THREADS_KEY)
+    private final int rpcMinThreads;
+    @JsonProperty(RPC_MAX_THREADS_KEY)
+    private final int rpcMaxThreads;
+    @JsonProperty(RPC_SEND_BUFF_SIZE_IN_BYTES_KEY)
+    private final int rpcSendBuffSizeInBytes;
+    @JsonProperty(RPC_RECV_BUFF_SIZE_IN_BYTES_KEY)
+    private final int rpcRecvBuffSizeInBytes;
+    @JsonProperty(CONCURRENT_COMPACTORS_KEY)
+    private final int concurrentCompactors;
+    @JsonProperty(STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC_KEY)
+    private final int streamThroughputOutboundMegabitsPerSec;
+    @JsonProperty(INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC_KEY)
+    private final int interDcStreamThroughputOutboundMegabitsPerSec;
+    @JsonProperty(STREAMING_SOCKET_TIMEOUT_IN_MS_KEY)
+    private final int streamingSocketTimeoutInMs;
+    @JsonProperty(PHI_CONVICT_THRESHOLD_KEY)
+    private final int phiConvictThreshold;
+    @JsonProperty(GC_WARN_THRESHOLD_IN_MS_KEY)
+    private final int gcWarnThresholdInMs;
+
     public CassandraApplicationConfig(
             String clusterName,
             int numTokens,
@@ -677,7 +842,34 @@ public class CassandraApplicationConfig {
             int tracetypeQueryTtl,
             int tracetypeRepairTtl,
             boolean enableUserDefinedFunctions,
-            int windowsTimerInterval) {
+            int windowsTimerInterval,
+            int rolesUpdateIntervalInMs,
+            int permissionsUpdateIntervalInMs,
+            int keyCacheKeysToSave,
+            int rowCacheKeysToSave,
+            int counterCacheKeysToSave,
+            int fileCacheSizeInMb,
+            int memtableHeapSpaceInMb,
+            int memtableOffheapSpaceInMb,
+            double metableCleanupThreshold,
+            int commitLogTotalSpaceInMb,
+            int memtableFlushWritersKey,
+            boolean listenOnBroadcastAddress,
+            String internodeAuthenticator,
+            int nativeTransportMaxThreads,
+            int nativeTransportMaxFrameSizeInMb,
+            int nativeTransportMaxConcurrentConnections,
+            int nativeTransportMaxConcurrentConnectionsPerIpKey,
+            int rpcMinThreads,
+            int rpcMaxThreads,
+            int rpcSendBuffSizeInBytes,
+            int rpcRecvBuffSizeInBytes,
+            int concurrentCompactors,
+            int streamThroughputOutboundMegabitsPerSec,
+            int interDcStreamThroughputOutboundMegabitsPerSec,
+            int streamingSocketTimeoutInMs,
+            int phiConvictThreshold,
+            int gcWarnThresholdInMs) {
         this.clusterName = clusterName;
         this.numTokens = numTokens;
         this.hintedHandoffEnabled = hintedHandoffEnabled;
@@ -753,6 +945,34 @@ public class CassandraApplicationConfig {
         this.tracetypeRepairTtl = tracetypeRepairTtl;
         this.enableUserDefinedFunctions = enableUserDefinedFunctions;
         this.windowsTimerInterval = windowsTimerInterval;
+
+        this.rolesUpdateIntervalInMs = rolesUpdateIntervalInMs;
+        this.permissionsUpdateIntervalInMs = permissionsUpdateIntervalInMs;
+        this.keyCacheKeysToSave = keyCacheKeysToSave;
+        this.rowCacheKeysToSave = rowCacheKeysToSave;
+        this.counterCacheKeysToSave = counterCacheKeysToSave;
+        this.fileCacheSizeInMb = fileCacheSizeInMb;
+        this.memtableHeapSpaceInMb = memtableHeapSpaceInMb;
+        this.memtableOffheapSpaceInMb = memtableOffheapSpaceInMb;
+        this.metableCleanupThreshold = metableCleanupThreshold;
+        this.commitLogTotalSpaceInMb = commitLogTotalSpaceInMb;
+        this.memtableFlushWritersKey = memtableFlushWritersKey;
+        this.listenOnBroadcastAddress = listenOnBroadcastAddress;
+        this.internodeAuthenticator = internodeAuthenticator;
+        this.nativeTransportMaxThreads = nativeTransportMaxThreads;
+        this.nativeTransportMaxFrameSizeInMb = nativeTransportMaxFrameSizeInMb;
+        this.nativeTransportMaxConcurrentConnections = nativeTransportMaxConcurrentConnections;
+        this.nativeTransportMaxConcurrentConnectionsPerIpKey = nativeTransportMaxConcurrentConnectionsPerIpKey;
+        this.rpcMinThreads = rpcMinThreads;
+        this.rpcMaxThreads = rpcMaxThreads;
+        this.rpcSendBuffSizeInBytes = rpcSendBuffSizeInBytes;
+        this.rpcRecvBuffSizeInBytes = rpcRecvBuffSizeInBytes;
+        this.concurrentCompactors = concurrentCompactors;
+        this.streamThroughputOutboundMegabitsPerSec = streamThroughputOutboundMegabitsPerSec;
+        this.interDcStreamThroughputOutboundMegabitsPerSec = interDcStreamThroughputOutboundMegabitsPerSec;
+        this.streamingSocketTimeoutInMs = streamingSocketTimeoutInMs;
+        this.phiConvictThreshold = phiConvictThreshold;
+        this.gcWarnThresholdInMs = gcWarnThresholdInMs;
     }
 
     public String getClusterName() {
@@ -1056,6 +1276,34 @@ public class CassandraApplicationConfig {
         return endpointSnitch;
     }
 
+    public int getRolesUpdateIntervalInMs() { return rolesUpdateIntervalInMs;}
+    public int getPermissionsUpdateIntervalInMs() { return permissionsUpdateIntervalInMs;}
+    public int getKeyCacheKeysToSave() { return keyCacheKeysToSave;}
+    public int getRowCacheKeysToSave() { return rowCacheKeysToSave;}
+    public int getCounterCacheKeysToSave() { return counterCacheKeysToSave;}
+    public int getFileCacheSizeInMb() { return fileCacheSizeInMb;}
+    public int getMemtableHeapSpaceInMb() { return memtableHeapSpaceInMb;}
+    public int getMemtableOffheapSpaceInMb() { return memtableOffheapSpaceInMb;}
+    public double getMetableCleanupThreshold() { return metableCleanupThreshold;}
+    public int getCommitLogTotalSpaceInMb() { return commitLogTotalSpaceInMb;}
+    public int getMemtableFlushWritersKey() { return memtableFlushWritersKey;}
+    public boolean getListenOnBroadcastAddress() { return listenOnBroadcastAddress;}
+    public String getInternodeAuthenticator() { return internodeAuthenticator;}
+    public int getNativeTransportMaxThreads() { return nativeTransportMaxThreads;}
+    public int getNativeTransportMaxFrameSizeInMb() { return nativeTransportMaxFrameSizeInMb;}
+    public int getNativeTransportMaxConcurrentConnections() { return nativeTransportMaxConcurrentConnections;}
+    public int getNativeTransportMaxConcurrentConnectionsPerIpKey() { return nativeTransportMaxConcurrentConnectionsPerIpKey;}
+    public int getRpcMinThreads() { return rpcMinThreads;}
+    public int getRpcMaxThreads() { return rpcMaxThreads;}
+    public int getRpcSendBuffSizeInBytes() { return rpcSendBuffSizeInBytes;}
+    public int getRpcRecvBuffSizeInBytes() { return rpcRecvBuffSizeInBytes;}
+    public int getConcurrentCompactors() { return concurrentCompactors;}
+    public int getStreamThroughputOutboundMegabitsPerSec() { return streamThroughputOutboundMegabitsPerSec;}
+    public int getInterDcStreamThroughputOutboundMegabitsPerSec() { return interDcStreamThroughputOutboundMegabitsPerSec;}
+    public int getStreamingSocketTimeoutInMs() { return streamingSocketTimeoutInMs;}
+    public int getPhiConvictThreshold() { return phiConvictThreshold;}
+    public int getGcWarnThresholdInMs() { return gcWarnThresholdInMs;}
+
     public Map<String, Object> toMap() {
 
         Map<String, Object> map = new HashMap<>(100);
@@ -1155,7 +1403,33 @@ public class CassandraApplicationConfig {
                 DEFAULT_CLIENT_ENCRYPTION_OPTIONS);
         map.put(SERVER_ENCRYPTION_OPTIONS_KEY,
                 DEFAULT_SERVER_ENCRYPTION_OPTIONS);
-
+        map.put(ROLES_UPDATE_INTERVAL_IN_MS_KEY, rolesUpdateIntervalInMs);
+        map.put(PERMISSIONS_UPDATE_INTERVAL_IN_MS_KEY, permissionsUpdateIntervalInMs);
+        map.put(KEY_CACHE_KEYS_TO_SAVE_KEY, keyCacheKeysToSave);
+        map.put(ROW_CACHE_KEYS_TO_SAVE_KEY, rowCacheKeysToSave);
+        map.put(COUNTER_CACHE_KEYS_TO_SAVE_KEY, counterCacheKeysToSave);
+        map.put(FILE_CACHE_SIZE_IN_MB_KEY, fileCacheSizeInMb);
+        map.put(MEMTABLE_HEAP_SPACE_IN_MB_KEY, memtableHeapSpaceInMb);
+        map.put(MEMTABLE_OFFHEAP_SPACE_IN_MB_KEY, memtableOffheapSpaceInMb);
+        map.put(MEMTABLE_CLEANUP_THRESHOLD_KEY, metableCleanupThreshold);
+        map.put(COMMITLOG_TOTAL_SPACE_IN_MB_KEY, commitLogTotalSpaceInMb);
+        map.put(MEMTABLE_FLUSH_WRITERS_KEY, memtableFlushWritersKey);
+        map.put(LISTEN_ON_BROADCAST_ADDRESS_KEY, listenOnBroadcastAddress);
+        map.put(INTERNODE_AUTHENTICATOR_KEY, internodeAuthenticator);
+        map.put(NATIVE_TRANSPORT_MAX_THREADS_KEY, nativeTransportMaxThreads);
+        map.put(NATIVE_TRANSPORT_MAX_FRAME_SIZE_IN_MB_KEY, nativeTransportMaxFrameSizeInMb);
+        map.put(NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_KEY, nativeTransportMaxConcurrentConnections);
+        map.put(NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_PER_IP_KEY, nativeTransportMaxConcurrentConnectionsPerIpKey);
+        map.put(RPC_MIN_THREADS_KEY, rpcMinThreads);
+        map.put(RPC_MAX_THREADS_KEY, rpcMaxThreads);
+        map.put(RPC_SEND_BUFF_SIZE_IN_BYTES_KEY, rpcSendBuffSizeInBytes);
+        map.put(RPC_RECV_BUFF_SIZE_IN_BYTES_KEY, rpcRecvBuffSizeInBytes);
+        map.put(CONCURRENT_COMPACTORS_KEY, concurrentCompactors);
+        map.put(STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC_KEY, streamThroughputOutboundMegabitsPerSec);
+        map.put(INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC_KEY, interDcStreamThroughputOutboundMegabitsPerSec);
+        map.put(STREAMING_SOCKET_TIMEOUT_IN_MS_KEY, streamingSocketTimeoutInMs);
+        map.put(PHI_CONVICT_THRESHOLD_KEY, phiConvictThreshold);
+        map.put(GC_WARN_THRESHOLD_IN_MS_KEY, gcWarnThresholdInMs);
         return map;
     }
 
@@ -1235,6 +1509,33 @@ public class CassandraApplicationConfig {
                 getTracetypeRepairTtl() == that.getTracetypeRepairTtl() &&
                 isEnableUserDefinedFunctions() == that.isEnableUserDefinedFunctions() &&
                 getWindowsTimerInterval() == that.getWindowsTimerInterval() &&
+                getRolesUpdateIntervalInMs() == that.getRolesUpdateIntervalInMs() &&
+                getPermissionsUpdateIntervalInMs() == that.getPermissionsUpdateIntervalInMs() &&
+                getKeyCacheKeysToSave() == that.getKeyCacheKeysToSave() &&
+                getRowCacheKeysToSave() == that.getRowCacheKeysToSave() &&
+                getCounterCacheKeysToSave() == that.getCounterCacheKeysToSave() &&
+                getFileCacheSizeInMb() == that.getFileCacheSizeInMb() &&
+                getMemtableHeapSpaceInMb() == that.getMemtableHeapSpaceInMb() &&
+                getMemtableOffheapSpaceInMb() == that.getMemtableOffheapSpaceInMb() &&
+                getMetableCleanupThreshold() == that.getMetableCleanupThreshold() &&
+                getCommitLogTotalSpaceInMb() == that.getCommitLogTotalSpaceInMb() &&
+                getMemtableFlushWritersKey() == that.getMemtableFlushWritersKey() &&
+                getListenOnBroadcastAddress() == that.getListenOnBroadcastAddress() &&
+                getNativeTransportMaxThreads() == that.getNativeTransportMaxThreads() &&
+                getNativeTransportMaxFrameSizeInMb() == that.getNativeTransportMaxFrameSizeInMb() &&
+                getNativeTransportMaxConcurrentConnections() == that.getNativeTransportMaxConcurrentConnections() &&
+                getNativeTransportMaxConcurrentConnectionsPerIpKey() == that.getNativeTransportMaxConcurrentConnectionsPerIpKey() &&
+                getRpcMinThreads() == that.getRpcMinThreads() &&
+                getRpcMaxThreads() == that.getRpcMaxThreads() &&
+                getRpcSendBuffSizeInBytes() == that.getRpcSendBuffSizeInBytes() &&
+                getRpcRecvBuffSizeInBytes() == that.getRpcRecvBuffSizeInBytes() &&
+                getConcurrentCompactors() == that.getConcurrentCompactors() &&
+                getStreamThroughputOutboundMegabitsPerSec() == that.getStreamThroughputOutboundMegabitsPerSec() &&
+                getInterDcStreamThroughputOutboundMegabitsPerSec() == that.getInterDcStreamThroughputOutboundMegabitsPerSec() &&
+                getStreamingSocketTimeoutInMs() == that.getStreamingSocketTimeoutInMs() &&
+                getPhiConvictThreshold() == that.getPhiConvictThreshold() &&
+                getGcWarnThresholdInMs() == that.getGcWarnThresholdInMs() &&
+                Objects.equals(getInternodeAuthenticator(), that.getInternodeAuthenticator()) &&
                 Objects.equals(getClusterName(), that.getClusterName()) &&
                 Objects.equals(getAuthenticator(),
                         that.getAuthenticator()) &&
@@ -1305,7 +1606,34 @@ public class CassandraApplicationConfig {
                 getDynamicSnitchBadnessThreshold(), getRequestScheduler(),
                 getInternodeCompression(), isInterDcTcpNodelay(),
                 getTracetypeQueryTtl(), getTracetypeRepairTtl(),
-                isEnableUserDefinedFunctions(), getWindowsTimerInterval());
+                isEnableUserDefinedFunctions(), getWindowsTimerInterval(),
+                getRolesUpdateIntervalInMs(),
+                getPermissionsUpdateIntervalInMs(),
+                getKeyCacheKeysToSave(),
+                getRowCacheKeysToSave(),
+                getCounterCacheKeysToSave(),
+                getFileCacheSizeInMb(),
+                getMemtableHeapSpaceInMb(),
+                getMemtableOffheapSpaceInMb(),
+                getMetableCleanupThreshold(),
+                getCommitLogTotalSpaceInMb(),
+                getMemtableFlushWritersKey(),
+                getListenOnBroadcastAddress(),
+                getInternodeAuthenticator(),
+                getNativeTransportMaxThreads(),
+                getNativeTransportMaxFrameSizeInMb(),
+                getNativeTransportMaxConcurrentConnections(),
+                getNativeTransportMaxConcurrentConnectionsPerIpKey(),
+                getRpcMinThreads(),
+                getRpcMaxThreads(),
+                getRpcSendBuffSizeInBytes(),
+                getRpcRecvBuffSizeInBytes(),
+                getConcurrentCompactors(),
+                getStreamThroughputOutboundMegabitsPerSec(),
+                getInterDcStreamThroughputOutboundMegabitsPerSec(),
+                getStreamingSocketTimeoutInMs(),
+                getPhiConvictThreshold(),
+                getGcWarnThresholdInMs());
     }
 
     @Override
@@ -1390,6 +1718,33 @@ public class CassandraApplicationConfig {
         private int tracetypeRepairTtl;
         private boolean enableUserDefinedFunctions;
         private int windowsTimerInterval;
+        private int rolesUpdateIntervalInMs;
+        private int permissionsUpdateIntervalInMs;
+        private int keyCacheKeysToSave;
+        private int rowCacheKeysToSave;
+        private int counterCacheKeysToSave;
+        private int fileCacheSizeInMb;
+        private int memtableHeapSpaceInMb;
+        private int memtableOffheapSpaceInMb;
+        private double metableCleanupThreshold;
+        private int commitLogTotalSpaceInMb;
+        private int memtableFlushWritersKey;
+        private boolean listenOnBroadcastAddress;
+        private String internodeAuthenticator;
+        private int nativeTransportMaxThreads;
+        private int nativeTransportMaxFrameSizeInMb;
+        private int nativeTransportMaxConcurrentConnections;
+        private int nativeTransportMaxConcurrentConnectionsPerIpKey;
+        private int rpcMinThreads;
+        private int rpcMaxThreads;
+        private int rpcSendBuffSizeInBytes;
+        private int rpcRecvBuffSizeInBytes;
+        private int concurrentCompactors;
+        private int streamThroughputOutboundMegabitsPerSec;
+        private int interDcStreamThroughputOutboundMegabitsPerSec;
+        private int streamingSocketTimeoutInMs;
+        private int phiConvictThreshold;
+        private int gcWarnThresholdInMs;
 
         private Builder() {
 
@@ -1468,6 +1823,34 @@ public class CassandraApplicationConfig {
             tracetypeRepairTtl = DEFAULT_TRACETYPE_REPAIR_TTL;
             enableUserDefinedFunctions = DEFAULT_ENABLE_USER_DEFINED_FUNCTIONS;
             windowsTimerInterval = DEFAULT_WINDOWS_TIMER_INTERVAL;
+
+            rolesUpdateIntervalInMs = DEFAULT_ROLES_UPDATE_INTERVAL_IN_MS;
+            permissionsUpdateIntervalInMs = DEFAULT_PERMISSIONS_UPDATE_INTERVAL_IN_MS;
+            keyCacheKeysToSave = DEFAULT_KEY_CACHE_KEYS_TO_SAVE;
+            rowCacheKeysToSave = DEFAULT_ROW_CACHE_KEYS_TO_SAVE;
+            counterCacheKeysToSave = DEFAULT_COUNTER_CACHE_KEYS_TO_SAVE;
+            fileCacheSizeInMb = DEFAULT_FILE_CACHE_SIZE_IN_MB;
+            memtableHeapSpaceInMb = DEFAULT_MEMTABLE_HEAP_SPACE_IN_MB;
+            memtableOffheapSpaceInMb = DEFAULT_MEMTABLE_OFFHEAP_SPACE_IN_MB;
+            metableCleanupThreshold = DEFAULT_MEMTABLE_CLEANUP_THRESHOLD;
+            commitLogTotalSpaceInMb = DEFAULT_COMMITLOG_TOTAL_SPACE_IN_MB;
+            memtableFlushWritersKey = DEFAULT_MEMTABLE_FLUSH_WRITERS;
+            listenOnBroadcastAddress = DEFAULT_LISTEN_ON_BROADCAST_ADDRESS;
+            internodeAuthenticator = DEFAULT_INTERNODE_AUTHENTICATOR;
+            nativeTransportMaxThreads = DEFAULT_NATIVE_TRANSPORT_MAX_THREADS;
+            nativeTransportMaxFrameSizeInMb = DEFAULT_NATIVE_TRANSPORT_MAX_FRAME_SIZE_IN_MB;
+            nativeTransportMaxConcurrentConnections = DEFAULT_NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS;
+            nativeTransportMaxConcurrentConnectionsPerIpKey = DEFAULT_NATIVE_TRANSPORT_MAX_CONCURRENT_CONNECTIONS_PER_IP;
+            rpcMinThreads = DEFAULT_RPC_MIN_THREADS;
+            rpcMaxThreads = DEFAULT_RPC_MAX_THREADS;
+            rpcSendBuffSizeInBytes = DEFAULT_RPC_SEND_BUFF_SIZE_IN_BYTES;
+            rpcRecvBuffSizeInBytes = DEFAULT_RPC_RECV_BUFF_SIZE_IN_BYTES;
+            concurrentCompactors = DEFAULT_CONCURRENT_COMPACTORS;
+            streamThroughputOutboundMegabitsPerSec = DEFAULT_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC;
+            interDcStreamThroughputOutboundMegabitsPerSec = DEFAULT_INTER_DC_STREAM_THROUGHPUT_OUTBOUND_MEGABITS_PER_SEC;
+            streamingSocketTimeoutInMs = DEFAULT_STREAMING_SOCKET_TIMEOUT_IN_MS;
+            phiConvictThreshold = DEFAULT_PHI_CONVICT_THRESHOLD;
+            gcWarnThresholdInMs = DEFAULT_GC_WARN_THRESHOLD_IN_MS;
         }
 
         private Builder(CassandraApplicationConfig config) {
@@ -1547,6 +1930,33 @@ public class CassandraApplicationConfig {
             this.tracetypeRepairTtl = config.tracetypeRepairTtl;
             this.enableUserDefinedFunctions = config.enableUserDefinedFunctions;
             this.windowsTimerInterval = config.windowsTimerInterval;
+            this.rolesUpdateIntervalInMs = config.rolesUpdateIntervalInMs;
+            this.permissionsUpdateIntervalInMs = config.permissionsUpdateIntervalInMs;
+            this.keyCacheKeysToSave = config.keyCacheKeysToSave;
+            this.rowCacheKeysToSave = config.rowCacheKeysToSave;
+            this.counterCacheKeysToSave = config.counterCacheKeysToSave;
+            this.fileCacheSizeInMb = config.fileCacheSizeInMb;
+            this.memtableHeapSpaceInMb = config.memtableHeapSpaceInMb;
+            this.memtableOffheapSpaceInMb = config.memtableOffheapSpaceInMb;
+            this.metableCleanupThreshold = config.metableCleanupThreshold;
+            this.commitLogTotalSpaceInMb = config.commitLogTotalSpaceInMb;
+            this.memtableFlushWritersKey = config.memtableFlushWritersKey;
+            this.listenOnBroadcastAddress = config.listenOnBroadcastAddress;
+            this.internodeAuthenticator = config.internodeAuthenticator;
+            this.nativeTransportMaxThreads = config.nativeTransportMaxThreads;
+            this.nativeTransportMaxFrameSizeInMb = config.nativeTransportMaxFrameSizeInMb;
+            this.nativeTransportMaxConcurrentConnections = config.nativeTransportMaxConcurrentConnections;
+            this.nativeTransportMaxConcurrentConnectionsPerIpKey = config.nativeTransportMaxConcurrentConnectionsPerIpKey;
+            this.rpcMinThreads = config.rpcMinThreads;
+            this.rpcMaxThreads = config.rpcMaxThreads;
+            this.rpcSendBuffSizeInBytes = config.rpcSendBuffSizeInBytes;
+            this.rpcRecvBuffSizeInBytes = config.rpcRecvBuffSizeInBytes;
+            this.concurrentCompactors = config.concurrentCompactors;
+            this.streamThroughputOutboundMegabitsPerSec = config.streamThroughputOutboundMegabitsPerSec;
+            this.interDcStreamThroughputOutboundMegabitsPerSec = config.interDcStreamThroughputOutboundMegabitsPerSec;
+            this.streamingSocketTimeoutInMs = config.streamingSocketTimeoutInMs;
+            this.phiConvictThreshold = config.phiConvictThreshold;
+            this.gcWarnThresholdInMs = config.gcWarnThresholdInMs;
         }
 
         public String getClusterName() {
@@ -2300,7 +2710,34 @@ public class CassandraApplicationConfig {
                     tracetypeQueryTtl,
                     tracetypeRepairTtl,
                     enableUserDefinedFunctions,
-                    windowsTimerInterval);
+                    windowsTimerInterval,
+                    rolesUpdateIntervalInMs,
+                    permissionsUpdateIntervalInMs,
+                    keyCacheKeysToSave,
+                    rowCacheKeysToSave,
+                    counterCacheKeysToSave,
+                    fileCacheSizeInMb,
+                    memtableHeapSpaceInMb,
+                    memtableOffheapSpaceInMb,
+                    metableCleanupThreshold,
+                    commitLogTotalSpaceInMb,
+                    memtableFlushWritersKey,
+                    listenOnBroadcastAddress,
+                    internodeAuthenticator,
+                    nativeTransportMaxThreads,
+                    nativeTransportMaxFrameSizeInMb,
+                    nativeTransportMaxConcurrentConnections,
+                    nativeTransportMaxConcurrentConnectionsPerIpKey,
+                    rpcMinThreads,
+                    rpcMaxThreads,
+                    rpcSendBuffSizeInBytes,
+                    rpcRecvBuffSizeInBytes,
+                    concurrentCompactors,
+                    streamThroughputOutboundMegabitsPerSec,
+                    interDcStreamThroughputOutboundMegabitsPerSec,
+                    streamingSocketTimeoutInMs,
+                    phiConvictThreshold,
+                    gcWarnThresholdInMs);
         }
     }
 
