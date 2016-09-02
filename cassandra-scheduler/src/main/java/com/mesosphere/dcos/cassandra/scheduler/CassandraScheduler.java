@@ -113,6 +113,7 @@ public class CassandraScheduler implements Scheduler, Managed {
         registerFramework();
         eventBus.register(stageManager);
         eventBus.register(cassandraTasks);
+        reviveOffers();
     }
 
     @Override
@@ -149,6 +150,7 @@ public class CassandraScheduler implements Scheduler, Managed {
                     cleanup,
                     repair));
             reconciler.start(cassandraTasks.getTaskStatuses());
+            reviveOffers();
         } catch (Throwable t) {
             String error = "An error occurred when registering " +
                     "the framework and initializing the execution plan.";
@@ -162,6 +164,11 @@ public class CassandraScheduler implements Scheduler, Managed {
                              Protos.MasterInfo masterInfo) {
         LOGGER.info("Re-registered with master: {}", masterInfo);
         reconciler.start(cassandraTasks.getTaskStatuses());
+    }
+
+    private boolean shouldSuppress() {
+        return stageManager.getStage().isComplete() &&
+                !repairScheduler.hasOperations();
     }
 
     @Override
@@ -206,6 +213,11 @@ public class CassandraScheduler implements Scheduler, Managed {
             }
 
             declineOffers(driver, acceptedOffers, offers);
+
+            if (shouldSuppress()) {
+                LOGGER.info("No operations to perform. Suppressing offers.");
+                driver.suppressOffers();
+            }
         } catch (Throwable t){
             LOGGER.error("Error in offer acceptance cycle", t);
         }
@@ -246,6 +258,15 @@ public class CassandraScheduler implements Scheduler, Managed {
         } catch (Exception ex) {
             LOGGER.error("Error updating Stage Manager with status: {} reason: {}", status, ex);
         }
+
+        // We don't necessarily need to revive on every status update, but we might, and it's
+        // safe to do so.
+        reviveOffers();
+    }
+
+    private void reviveOffers() {
+        LOGGER.info("Reviving offers.");
+        driver.reviveOffers();
     }
 
     @Override
