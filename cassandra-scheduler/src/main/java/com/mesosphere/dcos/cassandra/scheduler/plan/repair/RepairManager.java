@@ -4,7 +4,8 @@ package com.mesosphere.dcos.cassandra.scheduler.plan.repair;
 import com.google.inject.Inject;
 import com.mesosphere.dcos.cassandra.common.serialization.Serializer;
 import com.mesosphere.dcos.cassandra.common.tasks.repair.RepairContext;
-import com.mesosphere.dcos.cassandra.scheduler.offer.ClusterTaskOfferRequirementProvider;
+import com.mesosphere.dcos.cassandra.scheduler.offer.CassandraOfferRequirementProvider;
+import com.mesosphere.dcos.cassandra.scheduler.offer.MaintenanceTaskOfferRequirementProvider;
 import com.mesosphere.dcos.cassandra.scheduler.persistence.PersistenceException;
 import com.mesosphere.dcos.cassandra.scheduler.persistence.PersistenceFactory;
 import com.mesosphere.dcos.cassandra.scheduler.persistence.PersistentReference;
@@ -25,7 +26,7 @@ public class RepairManager {
     public static final String REPAIR_KEY = "repair";
 
     private final CassandraTasks cassandraTasks;
-    private final ClusterTaskOfferRequirementProvider provider;
+    private final CassandraOfferRequirementProvider provider;
     private final PersistentReference<RepairContext> persistent;
     private volatile RepairPhase phase = null;
     private volatile RepairContext context = null;
@@ -33,7 +34,7 @@ public class RepairManager {
     @Inject
     public RepairManager(
             CassandraTasks cassandraTasks,
-            ClusterTaskOfferRequirementProvider provider,
+            MaintenanceTaskOfferRequirementProvider provider,
             PersistenceFactory persistenceFactory,
             final Serializer<RepairContext> serializer) {
         this.provider = provider;

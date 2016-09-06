@@ -1,6 +1,7 @@
 package com.mesosphere.dcos.cassandra.scheduler.plan;
 
 import com.mesosphere.dcos.cassandra.common.tasks.ClusterTaskContext;
+import com.mesosphere.dcos.cassandra.scheduler.offer.CassandraOfferRequirementProvider;
 import com.mesosphere.dcos.cassandra.scheduler.offer.ClusterTaskOfferRequirementProvider;
 import com.mesosphere.dcos.cassandra.scheduler.tasks.CassandraTasks;
 import org.apache.commons.collections.CollectionUtils;
@@ -21,12 +22,12 @@ public abstract class AbstractClusterTaskPhase<B extends Block, C extends Cluste
     protected final C context;
     protected final List<B> blocks;
     protected final CassandraTasks cassandraTasks;
-    protected final ClusterTaskOfferRequirementProvider provider;
+    protected final CassandraOfferRequirementProvider provider;
 
     public AbstractClusterTaskPhase(
             C context,
             CassandraTasks cassandraTasks,
-            ClusterTaskOfferRequirementProvider provider) {
+            CassandraOfferRequirementProvider provider) {
         this.provider = provider;
         this.context = context;
         this.cassandraTasks = cassandraTasks;

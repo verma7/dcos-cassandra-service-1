@@ -2,6 +2,7 @@ package com.mesosphere.dcos.cassandra.scheduler.plan.repair;
 
 
 import com.mesosphere.dcos.cassandra.common.tasks.repair.RepairContext;
+import com.mesosphere.dcos.cassandra.scheduler.offer.CassandraOfferRequirementProvider;
 import com.mesosphere.dcos.cassandra.scheduler.offer.ClusterTaskOfferRequirementProvider;
 import com.mesosphere.dcos.cassandra.scheduler.plan.AbstractClusterTaskPhase;
 import com.mesosphere.dcos.cassandra.scheduler.plan.repair.RepairBlock;
@@ -20,7 +21,7 @@ public class RepairPhase extends AbstractClusterTaskPhase<RepairBlock,
     public RepairPhase(
             RepairContext context,
             CassandraTasks cassandraTasks,
-            ClusterTaskOfferRequirementProvider provider) {
+            CassandraOfferRequirementProvider provider) {
         super(context, cassandraTasks, provider);
     }
 

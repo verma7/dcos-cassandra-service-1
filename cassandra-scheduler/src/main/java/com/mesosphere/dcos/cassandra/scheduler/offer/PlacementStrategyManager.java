@@ -32,4 +32,8 @@ public class PlacementStrategyManager {
                 return new AnyPlacementStrategy();
         }
     }
+
+    public static PlacementStrategy getPlacementStrategyForMaintenanceTask(CassandraTasks cassandraTasks) {
+        return new MaintenanceTaskPlacementStrategy(cassandraTasks);
+    }
 }
