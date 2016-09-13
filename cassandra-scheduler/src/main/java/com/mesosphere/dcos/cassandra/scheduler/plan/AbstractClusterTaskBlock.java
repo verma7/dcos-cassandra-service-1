@@ -20,6 +20,7 @@ public abstract class AbstractClusterTaskBlock<C extends ClusterTaskContext> imp
     private static final Logger LOGGER = LoggerFactory.getLogger(
             AbstractClusterTaskBlock.class);
 
+    private int retryTask = 0;
     protected final UUID id = UUID.randomUUID();
     protected final String daemon;
     protected volatile Status status;
@@ -157,6 +158,9 @@ public abstract class AbstractClusterTaskBlock<C extends ClusterTaskContext> imp
         LOGGER.info("{}: changing status from: {} to: {}", getName(), status,
                 newStatus);
         status = newStatus;
+        if (newStatus == Status.Pending) {
+            updateRetry();
+        }
     }
 
     @Override
@@ -176,7 +180,19 @@ public abstract class AbstractClusterTaskBlock<C extends ClusterTaskContext> imp
 
     @Override
     public boolean isComplete() {
-        return Status.Complete == this.status;
+        return isRetryDone() || Status.Complete == this.status;
+    }
+
+    public void updateRetry() {
+        this.retryTask++;
+        if (this.retryTask >= 10) {
+            this.status = Status.Complete;
+            LOGGER.info("Updating current task block status to complete after 10 retry to prevent it for running intinitely.");
+        }
+    }
+
+    public boolean isRetryDone() {
+        return this.retryTask >= 10;
     }
 
     public String getDaemon() {
