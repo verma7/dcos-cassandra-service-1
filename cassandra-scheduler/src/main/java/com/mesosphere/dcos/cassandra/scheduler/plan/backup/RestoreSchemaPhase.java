@@ -1,7 +1,7 @@
 package com.mesosphere.dcos.cassandra.scheduler.plan.backup;
 
 import com.mesosphere.dcos.cassandra.common.tasks.backup.RestoreContext;
-import com.mesosphere.dcos.cassandra.scheduler.offer.ClusterTaskOfferRequirementProvider;
+import com.mesosphere.dcos.cassandra.scheduler.offer.CassandraOfferRequirementProvider;
 import com.mesosphere.dcos.cassandra.scheduler.plan.AbstractClusterTaskPhase;
 import com.mesosphere.dcos.cassandra.scheduler.tasks.CassandraTasks;
 import org.slf4j.Logger;
@@ -19,7 +19,7 @@ public class RestoreSchemaPhase extends AbstractClusterTaskPhase<RestoreSchemaBl
     public RestoreSchemaPhase(
             RestoreContext context,
             CassandraTasks cassandraTasks,
-            ClusterTaskOfferRequirementProvider provider) {
+            CassandraOfferRequirementProvider provider) {
         super(context, cassandraTasks, provider);
     }
 

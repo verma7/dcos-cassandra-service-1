@@ -3,7 +3,8 @@ package com.mesosphere.dcos.cassandra.scheduler.plan.backup;
 import com.google.inject.Inject;
 import com.mesosphere.dcos.cassandra.common.serialization.Serializer;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupContext;
-import com.mesosphere.dcos.cassandra.scheduler.offer.ClusterTaskOfferRequirementProvider;
+import com.mesosphere.dcos.cassandra.scheduler.offer.CassandraOfferRequirementProvider;
+import com.mesosphere.dcos.cassandra.scheduler.offer.MaintenanceTaskOfferRequirementProvider;
 import com.mesosphere.dcos.cassandra.scheduler.persistence.PersistenceException;
 import com.mesosphere.dcos.cassandra.scheduler.persistence.PersistenceFactory;
 import com.mesosphere.dcos.cassandra.scheduler.persistence.PersistentReference;
@@ -28,7 +29,7 @@ public class BackupManager {
     public static final String BACKUP_KEY = "backup";
 
     private final CassandraTasks cassandraTasks;
-    private final ClusterTaskOfferRequirementProvider provider;
+    private final CassandraOfferRequirementProvider provider;
     private final PersistentReference<BackupContext> persistentBackupContext;
     private volatile BackupSnapshotPhase backup = null;
     private volatile BackupSchemaPhase schema = null;
@@ -38,7 +39,7 @@ public class BackupManager {
     @Inject
     public BackupManager(
             CassandraTasks cassandraTasks,
-            ClusterTaskOfferRequirementProvider provider,
+            MaintenanceTaskOfferRequirementProvider provider,
             PersistenceFactory persistenceFactory,
             final Serializer<BackupContext> serializer) {
         this.provider = provider;

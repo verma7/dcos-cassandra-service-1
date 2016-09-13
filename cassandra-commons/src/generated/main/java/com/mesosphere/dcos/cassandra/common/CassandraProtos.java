@@ -3963,6 +3963,14 @@ public final class CassandraProtos {
        * <code>REPAIR = 7;</code>
        */
       REPAIR(6, 7),
+      /**
+       * <code>BACKUP_SCHEMA = 8;</code>
+       */
+      BACKUP_SCHEMA(7, 8),
+      /**
+       * <code>SCHEMA_RESTORE = 9;</code>
+       */
+      SCHEMA_RESTORE(8, 9),
       ;
 
       /**
@@ -3993,6 +4001,14 @@ public final class CassandraProtos {
        * <code>REPAIR = 7;</code>
        */
       public static final int REPAIR_VALUE = 7;
+      /**
+       * <code>BACKUP_SCHEMA = 8;</code>
+       */
+      public static final int BACKUP_SCHEMA_VALUE = 8;
+      /**
+       * <code>SCHEMA_RESTORE = 9;</code>
+       */
+      public static final int SCHEMA_RESTORE_VALUE = 9;
 
 
       public final int getNumber() { return value; }
@@ -4006,6 +4022,8 @@ public final class CassandraProtos {
           case 5: return SNAPSHOT_RESTORE;
           case 6: return CLEANUP;
           case 7: return REPAIR;
+          case 8: return BACKUP_SCHEMA;
+          case 9: return SCHEMA_RESTORE;
           default: return null;
         }
       }
@@ -9024,7 +9042,7 @@ public final class CassandraProtos {
       "cos.cassandra.common.Location\022\017\n\007jmxPort" +
       "\030\010 \001(\005\022<\n\006volume\030\t \001(\0132,.com.mesosphere." +
       "dcos.cassandra.common.Volume\022\023\n\013applicat" +
-      "ion\030\n \001(\014\022\020\n\010diskType\030\013 \001(\t\"\361\003\n\021Cassandr" +
+      "ion\030\n \001(\014\022\020\n\010diskType\030\013 \001(\t\"\230\004\n\021Cassandr" +
       "aTaskData\022J\n\004type\030\001 \002(\0162<.com.mesosphere" +
       ".dcos.cassandra.common.CassandraTaskData" +
       ".TYPE\022\017\n\007address\030\002 \001(\t\022E\n\006config\030\003 \001(\01325" +
@@ -9033,25 +9051,26 @@ public final class CassandraProtos {
       "upName\030\005 \001(\t\022\030\n\020externalLocation\030\006 \001(\t\022\021",
       "\n\tkeySpaces\030\007 \003(\t\022\026\n\016columnFamilies\030\010 \003(" +
       "\t\022\023\n\013s3AccessKey\030\t \001(\t\022\023\n\013s3SecretKey\030\n " +
-      "\001(\t\022\025\n\rlocalLocation\030\013 \001(\t\"\212\001\n\004TYPE\022\024\n\020C" +
+      "\001(\t\022\025\n\rlocalLocation\030\013 \001(\t\"\261\001\n\004TYPE\022\024\n\020C" +
       "ASSANDRA_DAEMON\020\001\022\023\n\017BACKUP_SNAPSHOT\020\002\022\021" +
       "\n\rBACKUP_UPLOAD\020\003\022\025\n\021SNAPSHOT_DOWNLOAD\020\004" +
       "\022\024\n\020SNAPSHOT_RESTORE\020\005\022\013\n\007CLEANUP\020\006\022\n\n\006R" +
-      "EPAIR\020\007\"\204\002\n\017CassandraStatus\022\014\n\004mode\030\001 \001(" +
-      "\005\022\016\n\006joined\030\002 \001(\010\022\030\n\020rpcServerRunning\030\003 " +
-      "\001(\010\022\036\n\026nativeTransportRunning\030\004 \001(\010\022\031\n\021g" +
-      "ossipInitialized\030\005 \001(\010\022\025\n\rgossipRunning\030",
-      "\006 \001(\010\022\016\n\006hostId\030\007 \001(\t\022\020\n\010endpoint\030\010 \001(\t\022" +
-      "\022\n\ntokenCount\030\t \001(\005\022\022\n\ndataCenter\030\n \001(\t\022" +
-      "\014\n\004rack\030\013 \001(\t\022\017\n\007version\030\014 \001(\t\"\246\002\n\027Cassa" +
-      "ndraTaskStatusData\022J\n\004type\030\001 \002(\0162<.com.m" +
-      "esosphere.dcos.cassandra.common.Cassandr" +
-      "aTaskData.TYPE\022\014\n\004mode\030\002 \001(\005\022E\n\006status\030\003" +
-      " \001(\01325.com.mesosphere.dcos.cassandra.com" +
-      "mon.CassandraStatus\022\021\n\tdirectory\030\004 \001(\t\022\022" +
-      "\n\nbackupName\030\005 \001(\t\022\030\n\020externalLocation\030\006" +
-      " \001(\t\022\021\n\tkeySpaces\030\007 \003(\t\022\026\n\016columnFamilie",
-      "s\030\010 \003(\tB\021B\017CassandraProtos"
+      "EPAIR\020\007\022\021\n\rBACKUP_SCHEMA\020\010\022\022\n\016SCHEMA_RES" +
+      "TORE\020\t\"\204\002\n\017CassandraStatus\022\014\n\004mode\030\001 \001(\005" +
+      "\022\016\n\006joined\030\002 \001(\010\022\030\n\020rpcServerRunning\030\003 \001" +
+      "(\010\022\036\n\026nativeTransportRunning\030\004 \001(\010\022\031\n\021go",
+      "ssipInitialized\030\005 \001(\010\022\025\n\rgossipRunning\030\006" +
+      " \001(\010\022\016\n\006hostId\030\007 \001(\t\022\020\n\010endpoint\030\010 \001(\t\022\022" +
+      "\n\ntokenCount\030\t \001(\005\022\022\n\ndataCenter\030\n \001(\t\022\014" +
+      "\n\004rack\030\013 \001(\t\022\017\n\007version\030\014 \001(\t\"\246\002\n\027Cassan" +
+      "draTaskStatusData\022J\n\004type\030\001 \002(\0162<.com.me" +
+      "sosphere.dcos.cassandra.common.Cassandra" +
+      "TaskData.TYPE\022\014\n\004mode\030\002 \001(\005\022E\n\006status\030\003 " +
+      "\001(\01325.com.mesosphere.dcos.cassandra.comm" +
+      "on.CassandraStatus\022\021\n\tdirectory\030\004 \001(\t\022\022\n" +
+      "\nbackupName\030\005 \001(\t\022\030\n\020externalLocation\030\006 ",
+      "\001(\t\022\021\n\tkeySpaces\030\007 \003(\t\022\026\n\016columnFamilies" +
+      "\030\010 \003(\tB\021B\017CassandraProtos"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

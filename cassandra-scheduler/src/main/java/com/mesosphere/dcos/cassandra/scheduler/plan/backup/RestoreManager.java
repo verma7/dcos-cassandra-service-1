@@ -3,7 +3,8 @@ package com.mesosphere.dcos.cassandra.scheduler.plan.backup;
 import com.google.inject.Inject;
 import com.mesosphere.dcos.cassandra.common.serialization.Serializer;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.RestoreContext;
-import com.mesosphere.dcos.cassandra.scheduler.offer.ClusterTaskOfferRequirementProvider;
+import com.mesosphere.dcos.cassandra.scheduler.offer.CassandraOfferRequirementProvider;
+import com.mesosphere.dcos.cassandra.scheduler.offer.MaintenanceTaskOfferRequirementProvider;
 import com.mesosphere.dcos.cassandra.scheduler.persistence.PersistenceException;
 import com.mesosphere.dcos.cassandra.scheduler.persistence.PersistenceFactory;
 import com.mesosphere.dcos.cassandra.scheduler.persistence.PersistentReference;
@@ -24,7 +25,7 @@ public class RestoreManager {
     public static final String RESTORE_KEY = "restore";
 
     private CassandraTasks cassandraTasks;
-    private final ClusterTaskOfferRequirementProvider provider;
+    private final CassandraOfferRequirementProvider provider;
     private final PersistentReference<RestoreContext> persistentContext;
     private volatile RestoreContext context = null;
     private volatile DownloadSnapshotPhase download = null;
@@ -34,7 +35,7 @@ public class RestoreManager {
     @Inject
     public RestoreManager(
             final CassandraTasks cassandraTasks,
-            final ClusterTaskOfferRequirementProvider provider,
+            final MaintenanceTaskOfferRequirementProvider provider,
             final PersistenceFactory persistenceFactory,
             final Serializer<RestoreContext> serializer) {
         this.provider = provider;
