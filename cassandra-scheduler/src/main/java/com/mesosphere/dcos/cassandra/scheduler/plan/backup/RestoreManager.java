@@ -80,11 +80,11 @@ public class RestoreManager {
             try {
                 if(isComplete()){
                     for(String name:
-                            cassandraTasks.getDownloadSnapshotTasks().keySet()){
+                            cassandraTasks.getRestoreSchemaTasks().keySet()){
                         cassandraTasks.remove(name);
                     }
                     for(String name:
-                            cassandraTasks.getRestoreSchemaTasks().keySet()){
+                            cassandraTasks.getDownloadSnapshotTasks().keySet()){
                         cassandraTasks.remove(name);
                     }
                     for(String name:
@@ -93,11 +93,11 @@ public class RestoreManager {
                     }
                 }
                 persistentContext.store(context);
-                this.download = new DownloadSnapshotPhase(
+                this.schema = new RestoreSchemaPhase(
                         context,
                         cassandraTasks,
                         provider);
-                this.schema = new RestoreSchemaPhase(
+                this.download = new DownloadSnapshotPhase(
                         context,
                         cassandraTasks,
                         provider);
@@ -156,7 +156,7 @@ public class RestoreManager {
         if (context == null) {
             return Collections.emptyList();
         } else {
-            return Arrays.asList(download, schema, restore);
+            return Arrays.asList(schema, download, restore);
         }
     }
 }

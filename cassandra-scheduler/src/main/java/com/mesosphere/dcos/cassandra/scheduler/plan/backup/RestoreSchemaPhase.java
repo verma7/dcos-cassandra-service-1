@@ -12,6 +12,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * /**
+ * During restore schema phase, data will be schemated across all cassandra nodes.
+ */
 public class RestoreSchemaPhase extends AbstractClusterTaskPhase<RestoreSchemaBlock, RestoreContext> {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(RestoreSchemaPhase.class);
@@ -37,6 +41,6 @@ public class RestoreSchemaPhase extends AbstractClusterTaskPhase<RestoreSchemaBl
 
     @Override
     public String getName() {
-        return "Restore";
+        return "RestoreSchema";
     }
 }

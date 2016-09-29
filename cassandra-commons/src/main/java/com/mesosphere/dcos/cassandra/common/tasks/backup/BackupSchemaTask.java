@@ -21,7 +21,7 @@ import static org.apache.mesos.protobuf.ResourceBuilder.reservedMem;
 
 /**
  * BackupSchemaTask extends CassandraTask to implement a task that
- * Schemas a set of key spaces and column families for a Cassandra cluster.
+ * back's up schemas of set of key spaces for a Cassandra cluster.
  * The task can only be launched successfully if the CassandraDaemonTask is
  * running on the targeted slave.
  * If the key spaces for the task are empty. All non-system key spaces are
@@ -51,7 +51,7 @@ public class BackupSchemaTask extends CassandraTask {
      *
      * @param daemon The CassandraDaemonTask for which the schema will be
      *               taken.
-     * @return The name of the BackupschemaTask for daemon.
+     * @return The name of the BackupSchemaTask for daemon.
      */
     public static final String nameForDaemon(final CassandraDaemonTask daemon) {
         return nameForDaemon(daemon.getName());
@@ -59,7 +59,7 @@ public class BackupSchemaTask extends CassandraTask {
 
     /**
      * Builder for fluent style construction and mutation of
-     * BackupschemaTasks.
+     * BackupSchemaTasks.
      */
     public static class Builder {
 
@@ -780,6 +780,7 @@ public class BackupSchemaTask extends CassandraTask {
     public List<Protos.Resource> getCreateResources() {
         return Collections.emptyList();
     }
+
     @Override
     public List<Protos.Resource> getLaunchResources() {
         return Arrays.asList(

@@ -384,7 +384,7 @@ public class ConfigurationManager implements Managed {
                         daemon.getSlaveId(),
                         name,
                         Optional.empty()),
-                Lists.newArrayList(),
+                context.getKeySpaces(),
                 Lists.newArrayList(),
                 context.getName(),
                 context.getExternalLocation(),
@@ -448,8 +448,7 @@ public class ConfigurationManager implements Managed {
                 context.getExternalLocation(),
                 context.getS3AccessKey(),
                 context.getS3SecretKey(),
-                cassandraConfig.getVolume().getPath() +
-                        "/data/temp_" + context.getName());
+                cassandraConfig.getVolume().getPath() + "/data");
     }
 
     public RestoreSnapshotTask createRestoreSnapshotTask(
@@ -478,8 +477,7 @@ public class ConfigurationManager implements Managed {
                 context.getExternalLocation(),
                 context.getS3AccessKey(),
                 context.getS3SecretKey(),
-                cassandraConfig.getVolume().getPath() +
-                        "/data/temp_" + context.getName());
+                cassandraConfig.getVolume().getPath() + "/data");
     }
 
     public RestoreSchemaTask createRestoreSchemaTask(
@@ -508,8 +506,7 @@ public class ConfigurationManager implements Managed {
                 context.getExternalLocation(),
                 context.getS3AccessKey(),
                 context.getS3SecretKey(),
-                cassandraConfig.getVolume().getPath() +
-                        "/data/temp_" + context.getName());
+                cassandraConfig.getVolume().getPath() + "/data/temp_" + context.getName());
     }
 
     public BackupUploadTask createBackupUploadTask(

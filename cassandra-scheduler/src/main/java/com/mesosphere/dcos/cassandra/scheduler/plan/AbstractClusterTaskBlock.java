@@ -130,6 +130,7 @@ public abstract class AbstractClusterTaskBlock<C extends ClusterTaskContext> imp
                             getName(),
                             id);
                     setStatus(Status.Pending);
+                    updateRetry();
                 }
             }
 
@@ -158,9 +159,6 @@ public abstract class AbstractClusterTaskBlock<C extends ClusterTaskContext> imp
         LOGGER.info("{}: changing status from: {} to: {}", getName(), status,
                 newStatus);
         status = newStatus;
-        if (newStatus == Status.Pending) {
-            updateRetry();
-        }
     }
 
     @Override
@@ -183,11 +181,11 @@ public abstract class AbstractClusterTaskBlock<C extends ClusterTaskContext> imp
         return isRetryDone() || Status.Complete == this.status;
     }
 
-    public void updateRetry() {
+    private void updateRetry() {
         this.retryTask++;
         if (this.retryTask >= 10) {
-            this.status = Status.Complete;
-            LOGGER.info("Updating current task block status to complete after 10 retry to prevent it for running intinitely.");
+            setStatus(Status.Complete);
+            LOGGER.info("Updating current task block status to complete after 10 retry to prevent it for running infinitely.");
         }
     }
 

@@ -18,6 +18,7 @@ package com.mesosphere.dcos.cassandra.executor.tasks;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.DownloadSnapshotStatus;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.DownloadSnapshotTask;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.RestoreContext;
+import com.mesosphere.dcos.cassandra.executor.CassandraDaemonProcess;
 import com.mesosphere.dcos.cassandra.executor.backup.BackupStorageDriver;
 import org.apache.mesos.ExecutorDriver;
 import org.apache.mesos.Protos;
@@ -38,6 +39,7 @@ public class DownloadSnapshot implements Runnable {
     private RestoreContext context;
     private DownloadSnapshotTask cassandraTask;
     private BackupStorageDriver backupStorageDriver;
+    private CassandraDaemonProcess daemon;
 
     private void sendStatus(ExecutorDriver driver,
                             Protos.TaskState state,
@@ -64,10 +66,12 @@ public class DownloadSnapshot implements Runnable {
     public DownloadSnapshot(ExecutorDriver driver,
                             DownloadSnapshotTask task,
                             String nodeId,
-                            BackupStorageDriver backupStorageDriver) {
+                            BackupStorageDriver backupStorageDriver,
+                            CassandraDaemonProcess daemon) {
         this.driver = driver;
         this.backupStorageDriver = backupStorageDriver;
         this.cassandraTask = task;
+        this.daemon = daemon;
         this.context = new RestoreContext();
         context.setNodeId(nodeId);
         context.setName(this.cassandraTask.getBackupName());
@@ -75,29 +79,23 @@ public class DownloadSnapshot implements Runnable {
         context.setLocalLocation(this.cassandraTask.getLocalLocation());
         context.setS3AccessKey(this.cassandraTask.getS3AccessKey());
         context.setS3SecretKey(this.cassandraTask.getS3SecretKey());
+        context.setKeyspaces(this.daemon.getNonSystemKeySpaces());
     }
 
     @Override
     public void run() {
         try {
-            LOGGER.info("Starting DownloadSnapshot task using context: {}",
-                    context);
+            LOGGER.info("Starting DownloadSnapshot task using context: {}", context);
             // Send TASK_RUNNING
             sendStatus(driver, Protos.TaskState.TASK_RUNNING,
                     "Started downloading snapshot");
-
             backupStorageDriver.download(context);
-
-            // TODO: Do cleanup (So, that we are good when we start restoring the snapshots)
-
             // Send TASK_FINISHED
-            sendStatus(driver, Protos.TaskState.TASK_FINISHED,
-                    "Finished downloading snapshots");
+            sendStatus(driver, Protos.TaskState.TASK_FINISHED, "Finished downloading snapshots");
         } catch (Throwable t) {
 
             LOGGER.error("Download snapshot failed",t);
             sendStatus(driver, Protos.TaskState.TASK_FAILED, t.getMessage());
         }
     }
-
 }

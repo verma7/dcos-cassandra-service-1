@@ -2,6 +2,7 @@ package com.mesosphere.dcos.cassandra.executor.tasks;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
+import com.mesosphere.dcos.cassandra.common.config.CassandraApplicationConfig;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupContext;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupSchemaStatus;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupSchemaTask;
@@ -63,40 +64,37 @@ public class BackupSchema implements Runnable{
 
     @Override
     public void run(){
-
+        Cluster cluster = null;
         try{
             // Send TASK_RUNNING
             sendStatus(driver, Protos.TaskState.TASK_RUNNING,
                     "Started taking schema backup");
 
-            final List<String> nonSystemKeyspaces = daemon
-                    .getNonSystemKeySpaces();
-            LOGGER.info("Started taking schema for non system keyspaces: {}",
-                    nonSystemKeyspaces);
+            cluster = Cluster.builder().addContactPoint(daemon.getProbe().getEndpoint()).build();
+            final List<String> nonSystemKeyspaces = daemon.getNonSystemKeySpaces();
 
-            Cluster cluster = Cluster.builder().addContactPoint(daemon.getProbe().getEndpoint()).build();
+            LOGGER.info("Started taking schema for non system keyspaces: {}", nonSystemKeyspaces);
             StringBuilder sb = new StringBuilder();
-
             for (String keyspace : nonSystemKeyspaces) {
-                if (keyspace.startsWith("system_"))
-                    continue;
-                LOGGER.info("Taking schema for keyspace: {}", keyspace);
-                KeyspaceMetadata ksm = cluster.getMetadata().getKeyspace(keyspace);
-                LOGGER.info(ksm.exportAsString());
-                sb.append(ksm.exportAsString()).append("\n");
+                if (!CassandraApplicationConfig.SYSTEM_KEYSPACE_LIST.contains(keyspace)) {
+                    LOGGER.info("Taking schema for keyspace: {}", keyspace);
+                    KeyspaceMetadata ksm = cluster.getMetadata().getKeyspace(keyspace);
+                    sb.append(ksm.exportAsString()).append(System.getProperty("line.separator"));
+                }
             }
-
-            cluster.close();
-
-            backupStorageDriver.uploadSchema(context, sb.toString());
-            LOGGER.info(sb.toString());
+            if (sb.length() > 0) {
+                backupStorageDriver.uploadSchema(context, sb.toString());
+            }
 
             // Send TASK_FINISHED
             sendStatus(driver, Protos.TaskState.TASK_FINISHED,
                     "Finished taking schema for non system keyspaces: " + nonSystemKeyspaces);
         } catch (Throwable t){
-            LOGGER.error("Schema failed",t);
+            LOGGER.error("Schema backup failed. Reason: ", t);
             sendStatus(driver, Protos.TaskState.TASK_FAILED, t.getMessage());
+        } finally {
+            if (cluster != null)
+                cluster.close();
         }
     }
 }

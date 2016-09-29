@@ -41,7 +41,7 @@ public class UploadBackupBlock extends AbstractClusterTaskBlock<BackupContext> {
         CassandraDaemonTask daemonTask =
                 cassandraTasks.getDaemons().get(daemon);
         if (daemonTask == null) {
-            LOGGER.warn("Cassandra Daemon for backup does not exist");
+            LOGGER.warn("Cassandra Daemon for backup upload does not exist");
             setStatus(Status.Complete);
             return Optional.empty();
         }

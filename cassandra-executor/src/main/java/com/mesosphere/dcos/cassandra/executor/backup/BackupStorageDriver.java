@@ -33,7 +33,20 @@ public interface BackupStorageDriver {
      */
     void upload(BackupContext ctx) throws IOException;
 
+    /**
+     * uploads the schema for each keyspace and their corresponding column families
+     * @param ctx
+     * @param keyspacesSchema
+     * @throws IOException
+     */
     void uploadSchema(BackupContext ctx, String keyspacesSchema) throws IOException;
+
+    /**
+     * downloads the schema for each keyspace and their corresponding column families
+     * @param ctx
+     * @throws IOException
+     */
+    void downloadSchema(RestoreContext ctx) throws IOException;
 
     /**
      * Downloads snapshot files from a remote location.

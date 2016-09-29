@@ -15,7 +15,7 @@
  */
 package com.mesosphere.dcos.cassandra.executor.tasks;
 
-import com.mesosphere.dcos.cassandra.common.tasks.CassandraTask;
+import com.mesosphere.dcos.cassandra.common.config.CassandraApplicationConfig;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupSnapshotStatus;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupSnapshotTask;
 import com.mesosphere.dcos.cassandra.executor.CassandraDaemonProcess;
@@ -24,6 +24,7 @@ import org.apache.mesos.Protos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,13 +74,23 @@ public class BackupSnapshot implements Runnable {
             // Send TASK_RUNNING
             sendStatus(driver, Protos.TaskState.TASK_RUNNING,
                     "Started taking snapshot");
-
             final String snapshotName = this.cassandraTask.getBackupName();
-            final List<String> nonSystemKeyspaces = daemon
-                    .getNonSystemKeySpaces();
-            LOGGER.info("Started taking snapshot for non system keyspaces: {}",
-                    nonSystemKeyspaces);
-            for (String keyspace : nonSystemKeyspaces) {
+            final List<String> nonSystemKeyspaces = daemon.getNonSystemKeySpaces();
+            final List<String> customerKeySpacesRequested = cassandraTask.getKeySpaces();
+            List<String> resultKeySpacesBackup = new ArrayList<String>();
+
+            if (customerKeySpacesRequested != null && customerKeySpacesRequested.size() != 0) {
+                resultKeySpacesBackup.addAll(CassandraApplicationConfig.SYSTEM_KEYSPACE_LIST);
+                for (String keyspace : nonSystemKeyspaces){
+                    if (customerKeySpacesRequested.contains(keyspace) && !resultKeySpacesBackup.contains(keyspace))
+                        resultKeySpacesBackup.add(keyspace);
+                }
+            } else {
+                resultKeySpacesBackup.addAll(nonSystemKeyspaces);
+            }
+
+            LOGGER.info("Started taking snapshot for non system keyspaces: {}", resultKeySpacesBackup);
+            for (String keyspace : resultKeySpacesBackup) {
                 LOGGER.info("Taking snapshot for keyspace: {}", keyspace);
                 daemon.takeSnapShot(snapshotName, keyspace);
             }

@@ -22,6 +22,7 @@ import com.mesosphere.dcos.cassandra.common.tasks.ClusterTaskContext;
 import com.mesosphere.dcos.cassandra.common.util.JsonUtils;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -67,6 +68,7 @@ public class BackupContext implements ClusterTaskContext {
     private String localLocation;
     private String s3AccessKey;
     private String s3SecretKey;
+    private List<String> keySpaces;
 
     /**
      * Gets the name of the backup.
@@ -114,6 +116,14 @@ public class BackupContext implements ClusterTaskContext {
     public String getS3SecretKey() {
         return s3SecretKey;
     }
+
+    /**
+     * Gets the list of keyspaces to be backed up if null then
+     * all keyspaces will be backed up
+     *
+     * @return keyspaces to be backed up
+     */
+    public List<String> getKeySpaces() { return keySpaces; }
 
     /**
      * Sets the backup name.
@@ -165,6 +175,13 @@ public class BackupContext implements ClusterTaskContext {
     }
 
     /**
+     * sets the keyspaces to be backed up
+     *
+     * @param keySpaces the keyspaces to be backed
+     */
+    public void setKeySpaces(List<String> keySpaces) { this.keySpaces = keySpaces; }
+
+    /**
      * Gets the id of the node for the backup.
      *
      * @return The id of the node for the backup.
@@ -199,12 +216,13 @@ public class BackupContext implements ClusterTaskContext {
                 Objects.equals(getLocalLocation(),
                         that.getLocalLocation()) &&
                 Objects.equals(getS3AccessKey(), that.getS3AccessKey()) &&
-                Objects.equals(getS3SecretKey(), that.getS3SecretKey());
+                Objects.equals(getS3SecretKey(), that.getS3SecretKey()) &&
+                Objects.equals(getKeySpaces(), that.getKeySpaces());
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(getNodeId(), getName(), getExternalLocation(),
-                getLocalLocation(), getS3AccessKey(), getS3SecretKey());
+                getLocalLocation(), getS3AccessKey(), getS3SecretKey(), getKeySpaces());
     }
 }

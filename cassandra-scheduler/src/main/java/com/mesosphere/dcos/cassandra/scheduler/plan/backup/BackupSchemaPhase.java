@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * During schema phase, data will be schemated across all cassandra nodes.
+ * During backup schema phase, data will be schemated across all cassandra nodes.
  */
 public class BackupSchemaPhase extends AbstractClusterTaskPhase<BackupSchemaBlock, BackupContext> {
 
@@ -41,6 +41,6 @@ public class BackupSchemaPhase extends AbstractClusterTaskPhase<BackupSchemaBloc
 
     @Override
     public String getName() {
-        return "Schema";
+        return "BackupSchema";
     }
 }

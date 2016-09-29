@@ -3,6 +3,9 @@ package com.mesosphere.dcos.cassandra.scheduler.resources;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import java.util.Collections;
+import java.util.List;
+
 public class StartBackupRequest {
     @JsonProperty("backup_name")
     @NotEmpty
@@ -19,6 +22,9 @@ public class StartBackupRequest {
     @JsonProperty("s3_secret_key")
     @NotEmpty
     private String s3SecretKey;
+
+    @JsonProperty("key_spaces")
+    private List<String> keySpaces;
 
     public String getName() {
         return name;
@@ -51,6 +57,10 @@ public class StartBackupRequest {
     public void setS3SecretKey(String s3SecretKey) {
         this.s3SecretKey = s3SecretKey;
     }
+
+    public List<String> getKeyspaces() { return keySpaces != null ? keySpaces : Collections.emptyList();}
+
+    public void setKeySpaces(List<String> keySpaces) { this.keySpaces = keySpaces; }
 
     public boolean isValid(){
         return name != null && externalLocation != null &&

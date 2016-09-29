@@ -20,7 +20,7 @@ import static org.apache.mesos.protobuf.ResourceBuilder.reservedMem;
 
 /**
  * Restore SchemaTask extends CassandraTask to implement a task that
- * restores the Schemas of a set of key spaces and column families for a
+ * restores the Schemas of a set of key spaces for a
  * Cassandra cluster to a node. The task can only be launched successfully if
  * the CassandraDaemonTask is running on the targeted slave and
  * DownloadSnapshotTask has successfully completed.

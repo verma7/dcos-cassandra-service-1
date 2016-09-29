@@ -277,6 +277,8 @@ public class CassandraApplicationConfig {
     public static final int DEFAULT_STREAMING_SOCKET_TIMEOUT_IN_MS = 3600000;
     public static final int DEFAULT_PHI_CONVICT_THRESHOLD = 8;
     public static final int DEFAULT_GC_WARN_THRESHOLD_IN_MS = 1000;
+    public static final List<String> SYSTEM_KEYSPACE_LIST = Arrays.asList("system_auth", "system_distributed", "system_traces");
+    public static final String SCHEMAFILENAME = "schema.cql";
 
     /**
      * Parses a configuration from bytes.

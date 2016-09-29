@@ -68,7 +68,7 @@ public class BackupResource {
         context.setExternalLocation(request.getExternalLocation());
         context.setS3AccessKey(request.getS3AccessKey());
         context.setS3SecretKey(request.getS3SecretKey());
-
+        context.setKeySpaces(request.getKeyspaces());
         return context;
     }
 }

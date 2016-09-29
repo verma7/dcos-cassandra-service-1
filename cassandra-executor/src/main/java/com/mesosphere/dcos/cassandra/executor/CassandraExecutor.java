@@ -147,7 +147,8 @@ public class CassandraExecutor implements Executor {
                         driver,
                         (DownloadSnapshotTask) cassandraTask,
                         nodeId,
-                        new S3StorageDriver()));
+                        new S3StorageDriver(),
+                        cassandra));
 
                 break;
 
@@ -157,7 +158,8 @@ public class CassandraExecutor implements Executor {
                         driver,
                         (RestoreSnapshotTask) cassandraTask,
                         nodeId,
-                        cassandra.getTask().getConfig().getVersion()));
+                        cassandra.getTask().getConfig().getVersion(),
+                        cassandra));
 
                 break;
 
@@ -168,7 +170,8 @@ public class CassandraExecutor implements Executor {
                         cassandra,
                         (RestoreSchemaTask) cassandraTask,
                         nodeId,
-                        cassandra.getTask().getConfig().getVersion()));
+                        cassandra.getTask().getConfig().getVersion(),
+                        new S3StorageDriver()));
 
                 break;
 

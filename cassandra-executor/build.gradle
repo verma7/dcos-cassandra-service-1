@@ -3,7 +3,7 @@ mainClassName = 'com.mesosphere.dcos.cassandra.executor.Main'
 
 ext {
     junitVer = '4.12'
-    awsVer = '1.10.54'
+    awsVer = '1.11.37'
 }
 
 dependencies {
