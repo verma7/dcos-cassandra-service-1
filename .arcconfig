@@ -1,0 +1,7 @@
+{
+  "project_id": "infra/dcos-cassandra-service",
+  "conduit_uri": "https://code.uberinternal.com/",
+  "git.default-relative-commit": "origin/master",
+  "history.immutable": false
+}
+
