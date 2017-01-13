@@ -11,6 +11,8 @@ from . import infinity_commons
 from tests.command import (
     cassandra_api_url,
     check_health,
+    get_dcos_command,
+    get_cassandra_command,
     install,
     uninstall,
     unset_ssl_verification,
@@ -186,3 +188,24 @@ def test_is_suppressed():
     response = dcos.http.get(cassandra_api_url('state/properties/suppressed'))
     response.raise_for_status()
     assert response.text == "true"
+
+
+@pytest.mark.sanity
+def test_node_is_replaced():
+    infinity_commons.get_and_verify_plan(lambda p: p['status'] == 'COMPLETE')
+    replaced_node_host = [
+        t['slave_id'] for t in
+        get_dcos_command('task --json') if t['name'] == 'node-0'
+    ][0]
+    replaced_node_task_id = get_cassandra_command('node replace node-0')[0]
+    assert 'node-0' in replaced_node_task_id
+
+    plan = infinity_commons.get_and_verify_plan(lambda p: p['status'] == infinity_commons.PlanState.COMPLETE.value and len(infinity_commons.filter_phase(p, "Deploy")['steps']) == 3)
+    print(plan)
+    assert plan['status'] == infinity_commons.PlanState.COMPLETE.value
+
+    new_node_task_id = [
+        t['id'] for t in
+        get_dcos_command('task --json') if t['name'] == 'node-0'
+    ][0]
+    assert replaced_node_task_id != new_node_task_id

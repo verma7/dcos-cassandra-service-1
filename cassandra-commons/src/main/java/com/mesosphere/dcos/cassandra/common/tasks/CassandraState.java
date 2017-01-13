@@ -6,10 +6,7 @@ import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.google.protobuf.TextFormat;
 import com.mesosphere.dcos.cassandra.common.CassandraProtos;
-import com.mesosphere.dcos.cassandra.common.config.CassandraSchedulerConfiguration;
-import com.mesosphere.dcos.cassandra.common.config.ClusterTaskConfig;
-import com.mesosphere.dcos.cassandra.common.config.ConfigurationManager;
-import com.mesosphere.dcos.cassandra.common.config.ServiceConfig;
+import com.mesosphere.dcos.cassandra.common.config.*;
 import com.mesosphere.dcos.cassandra.common.persistence.PersistenceException;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.*;
 import com.mesosphere.dcos.cassandra.common.tasks.cleanup.CleanupContext;
@@ -217,6 +214,12 @@ public class CassandraState extends SchedulerState implements Managed {
         return CassandraContainer.create(daemonTask, templateTask);
     }
 
+    public CassandraContainer createCassandraContainer(
+            String name, String replaceIp) throws ConfigStoreException, PersistenceException {
+        CassandraDaemonTask daemonTask = createReplacementDaemon(name, replaceIp);
+        return createCassandraContainer(daemonTask, CassandraTemplateTask.create(daemonTask, clusterTaskConfig));
+    }
+
     public CassandraContainer moveCassandraContainer(CassandraDaemonTask name)
             throws PersistenceException, ConfigStoreException {
         return createCassandraContainer(moveDaemon(name));
@@ -250,6 +253,25 @@ public class CassandraState extends SchedulerState implements Managed {
             serviceConfig.getPrincipal(),
             targetConfigName.toString()
         );
+    }
+
+    public CassandraDaemonTask createReplacementDaemon(String name, String replaceIp) throws
+            PersistenceException, ConfigStoreException {
+        final CassandraSchedulerConfiguration targetConfig = configuration.getTargetConfig();
+        final UUID targetConfigName = configuration.getTargetConfigName();
+        final ServiceConfig serviceConfig = targetConfig.getServiceConfig();
+        final String frameworkId = getStateStore().fetchFrameworkId().get().getValue();
+
+        final CassandraConfig.Builder configBuilder = new CassandraConfig.Builder(targetConfig.getCassandraConfig());
+        configBuilder.setReplaceIp(replaceIp);
+
+        return configuration.createDaemon(
+                frameworkId,
+                name,
+                serviceConfig.getRole(),
+                serviceConfig.getPrincipal(),
+                targetConfigName.toString(),
+                configBuilder.build());
     }
 
     public CassandraDaemonTask moveDaemon(CassandraDaemonTask daemon)
