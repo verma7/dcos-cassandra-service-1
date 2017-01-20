@@ -5,10 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.google.protobuf.TextFormat;
-import com.mesosphere.dcos.cassandra.common.config.CassandraSchedulerConfiguration;
-import com.mesosphere.dcos.cassandra.common.config.ClusterTaskConfig;
-import com.mesosphere.dcos.cassandra.common.config.ConfigurationManager;
-import com.mesosphere.dcos.cassandra.common.config.ServiceConfig;
+import com.mesosphere.dcos.cassandra.common.config.*;
 import com.mesosphere.dcos.cassandra.common.persistence.PersistenceException;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.*;
 import com.mesosphere.dcos.cassandra.common.tasks.cleanup.CleanupContext;
@@ -234,11 +231,11 @@ public class CassandraState extends SchedulerState implements Managed {
         final ServiceConfig serviceConfig = targetConfig.getServiceConfig();
         final String frameworkId = getStateStore().fetchFrameworkId().get().getValue();
         return configuration.createDaemon(
-            frameworkId,
-            name,
-            serviceConfig.getRole(),
-            serviceConfig.getPrincipal(),
-            targetConfigName.toString()
+                frameworkId,
+                name,
+                serviceConfig.getRole(),
+                serviceConfig.getPrincipal(),
+                targetConfigName.toString()
         );
     }
 
@@ -266,10 +263,10 @@ public class CassandraState extends SchedulerState implements Managed {
         final CassandraSchedulerConfiguration targetConfig = configuration.getTargetConfig();
         final ServiceConfig serviceConfig = targetConfig.getServiceConfig();
         CassandraDaemonTask updated = configuration.moveDaemon(
-            daemon,
-            getStateStore().fetchFrameworkId().get().getValue(),
-            serviceConfig.getRole(),
-            serviceConfig.getPrincipal());
+                daemon,
+                getStateStore().fetchFrameworkId().get().getValue(),
+                serviceConfig.getRole(),
+                serviceConfig.getPrincipal());
         update(updated);
 
         Optional<Protos.TaskInfo> templateOptional = getTemplate(updated);
@@ -282,7 +279,7 @@ public class CassandraState extends SchedulerState implements Managed {
     }
 
     private Optional<Protos.TaskInfo> getTemplate(CassandraDaemonTask daemon) {
-            String templateTaskName = CassandraTemplateTask.toTemplateTaskName(daemon.getName());
+        String templateTaskName = CassandraTemplateTask.toTemplateTaskName(daemon.getName());
         try {
             Optional<Protos.TaskInfo> info = getStateStore().fetchTask(templateTaskName);
             LOGGER.info("Fetched template task for daemon '{}': {}",
@@ -669,6 +666,7 @@ public class CassandraState extends SchedulerState implements Managed {
         }
         return false;
     }
+
     public synchronized void refreshTasks() {
         LOGGER.info("Refreshing tasks");
         loadTasks();
@@ -707,7 +705,7 @@ public class CassandraState extends SchedulerState implements Managed {
 
     }
 
-    public Set<Protos.TaskStatus> getTaskStatuses()  {
+    public Set<Protos.TaskStatus> getTaskStatuses() {
         return new HashSet<>(getStateStore().fetchStatuses());
     }
 }
