@@ -56,12 +56,13 @@ public class CassandraRecoveryScheduler extends ChainedObserver {
                 terminated = cassandraState.replaceDaemon(terminated);
 
                 Optional<OfferRequirement> offerReq;
-                if (terminated.getConfig().getReplaceIp().isEmpty()) {
+                String replaceIp = terminated.getConfig().getReplaceIp();
+                if (replaceIp.isEmpty()) {
                     offerReq = offerRequirementProvider.getReplacementOfferRequirement(
                             cassandraState.getOrCreateContainer(terminated.getName()));
                 } else {
                     offerReq = offerRequirementProvider.getNewOfferRequirement(
-                            cassandraState.createCassandraContainer(terminated));
+                            cassandraState.createCassandraContainer(terminated.getName(), replaceIp));
                 }
 
                 if (offerReq.isPresent()) {
