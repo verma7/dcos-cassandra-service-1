@@ -331,6 +331,7 @@ public class CassandraDaemonTaskTest {
                 TEST_CONFIG_NAME,
                 testTaskExecutor,
                 CassandraConfig.DEFAULT);
+
         Assert.assertEquals(4, daemonTask.getExecutor().getURIs().size());
         Assert.assertTrue(daemonTask.getExecutor().getURIs().contains(DEFAULT_LIBMESOS_LOCATION));
 

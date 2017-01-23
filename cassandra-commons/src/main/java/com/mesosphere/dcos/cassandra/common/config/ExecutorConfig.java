@@ -17,6 +17,8 @@ import java.util.Objects;
 
 public class ExecutorConfig {
 
+    public static final String DEFAULT_LIBMESOS_LOCATION = "http://downloads.mesosphere.com/libmesos-bundle/libmesos-bundle-1.8.7-1.0.2.tar.gz";
+
     public static ExecutorConfig create(
             String command,
             List<String> arguments,
@@ -66,6 +68,7 @@ public class ExecutorConfig {
         // This check is compatibility with upgrades from 1.0.20 in which this configuration property is absent.
         if (StringUtils.isEmpty(libmesosLocation)) {
             libmesosLocation = System.getenv("EXECUTOR_LIBMESOS_LOCATION");
+
         }
         ExecutorConfig config = create(
                 command,
