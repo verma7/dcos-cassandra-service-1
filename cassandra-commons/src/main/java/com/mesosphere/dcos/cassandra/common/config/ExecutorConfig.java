@@ -65,8 +65,10 @@ public class ExecutorConfig {
             @JsonProperty("cache_fetched_uris") boolean cacheFetchedUris)
             throws URISyntaxException, UnsupportedEncodingException {
 
-        if (libmesosLocation == null || StringUtils.isEmpty(libmesosLocation)) {
-            libmesosLocation = DEFAULT_LIBMESOS_LOCATION;
+        // This check is compatibility with upgrades from 1.0.20 in which this configuration property is absent.
+        if (StringUtils.isEmpty(libmesosLocation)) {
+            libmesosLocation = System.getenv("EXECUTOR_LIBMESOS_LOCATION");
+
         }
         ExecutorConfig config = create(
                 command,
