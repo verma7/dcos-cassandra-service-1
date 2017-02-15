@@ -143,6 +143,10 @@ cassandra:
      enable_scripted_user_defined_functions : ${CASSANDRA_ENABLE_SCRIPTED_USER_DEFINED_FUNCTIONS:-false}
      max_value_size_in_mb : ${CASSANDRA_MAX_VALUE_SIZE_IN_MB:-256}
      otc_coalescing_strategy : ${CASSANDRA_OTC_COALESCING_STRATEGY:-"TIMEHORIZON"}
+     seed_provider_type : ${CASSANDRA_SEED_PROVIDER_TYPE:-"DCOS"}
+     current_dc_uns_path : ${CASSANDRA_CURRENT_DC_UNS_PATH:-""}
+     external_dcs_uns_paths : ${CASSANDRA_EXTERNAL_DCS_UNS_PATHS:-""}
+     num_seeds_per_uns_path : ${CASSANDRA_NUM_SEEDS_PER_UNS_PATH:-${SEED_NODES:-2} }
 nodes: ${NODES:-3}
 seed_nodes: ${SEED_NODES:-2}
 placement_constraint: "${PLACEMENT_CONSTRAINT:-}"
