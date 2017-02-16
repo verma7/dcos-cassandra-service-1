@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.ByteString;
 import com.mesosphere.dcos.cassandra.common.util.JsonUtils;
+import org.apache.mesos.config.SerializationUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -29,8 +30,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-
-import org.apache.mesos.config.SerializationUtils;
 
 /**
  * CassandraApplicationConfig is the configuration class for the
@@ -128,6 +127,13 @@ public class CassandraApplicationConfig {
   public static final String INTERNODE_AUTHENTICATOR_KEY = "internode_authenticator";
   public static final String COMMITLOG_TOTAL_SPACE_IN_MB_KEY = "commitlog_total_space_in_mb";
   public static final String SEEDS_URL_KEY = "seeds_url";
+
+  // UNS Seed provider specific keys:
+  public static final String SEED_PROVIDER_TYPE_KEY = "seed_provider_type";
+  public static final String SEEDS_CURRENT_DC_UNS_PATH_KEY = "current_dc_uns_path";
+  public static final String SEEDS_EXTERNAL_DCS_UNS_PATHS_KEY = "external_dcs_uns_paths";
+  public static final String SEEDS_NUM_SEEDS_PER_UNS_PATH_KEY = "num_seeds_per_uns_path";
+
   public static final String OTC_COALESCING_STRATEGY = "otc_coalescing_strategy";
 
   public static final String  ROLES_UPDATE_INTERVAL_IN_MS_KEY = "roles_update_interval_in_ms";
@@ -297,6 +303,8 @@ public class CassandraApplicationConfig {
   public static final boolean  DEFAULT_ENABLE_SCRIPTED_USER_DEFINED_FUNCTIONS = false;
   public static final int  DEFAULT_MAX_VALUE_SIZE_IN_MB = 256;
 
+  public static final String DEFAULT_SEED_PROVIDER_TYPE = "DCOS";
+
   /**
    * Parses a configuration from bytes.
    *
@@ -361,6 +369,45 @@ public class CassandraApplicationConfig {
           ("seeds_url", url))
       )
     );
+  }
+
+  /**
+   * Creates a UnsSeedProvider configuration for Cassandra.
+   *
+   * @param currentDcUnsPath    The UNS path of the datacenter that this Cassandra node belongs to.
+   * @param externalDcsUnsPaths A comma-separated list of UNS paths of the external datacenters that
+   *                            this node should fetch seeds from.
+   * @param numSeedsPerUnsPath  Number of seeds that should be fetched from each UNS path.
+   * @return A UnsSeedProvider configuration that will retrieve its seeds from UNS.
+   */
+  public static List<Map<String, Object>> createUnsSeedProvider(
+          String currentDcUnsPath, String externalDcsUnsPaths, int numSeedsPerUnsPath) {
+    return ImmutableList.<Map<String, Object>>of(
+            ImmutableMap.<String, Object>of(
+                    "class_name",
+                    "com.uber.cassandra.UnsSeedProvider",
+                    "parameters", ImmutableList.of(
+                            ImmutableMap.of(
+                                    SEEDS_CURRENT_DC_UNS_PATH_KEY, currentDcUnsPath,
+                                    SEEDS_EXTERNAL_DCS_UNS_PATHS_KEY, externalDcsUnsPaths,
+                                    SEEDS_NUM_SEEDS_PER_UNS_PATH_KEY, Integer.toString(numSeedsPerUnsPath)))
+            )
+    );
+  }
+
+  /**
+   * Creates the appropriate seed provider based on the type.
+   * @param seedProviderType One of "DCOS" or "UNS".
+   * @return A configuration for the appropriate seed provider.
+   */
+  public List<Map<String, Object>> createSeedProvider(String seedProviderType) {
+    if (seedProviderType.equals("DCOS")) {
+      return createDcosSeedProvider(seedsUrl);
+    } else if (seedProviderType.equals("UNS")) {
+      return createUnsSeedProvider(seedsCurrentDcUnsPath, seedsExternalDcsUnsPaths, seedsNumSeedsPerUnsPath);
+    } else {
+      throw new RuntimeException("Unsupported seed provider type: " + seedProviderType);
+    }
   }
 
   @JsonCreator
@@ -477,7 +524,11 @@ public class CassandraApplicationConfig {
     @JsonProperty(DISK_OPTIMIZATION_STRATEGY_KEY) final String diskOptimizationStrategy,
     @JsonProperty(UNLOGGED_BATCH_ACROSS_PARTITIONS_WARN_THRESHOLD_KEY) final int unloggedBatchAcrossPartitionsWarnThreshold,
     @JsonProperty(ENABLE_SCRIPTED_USER_DEFINED_FUNCTIONS_KEY) final boolean enableScriptedUserDefinedFunctions,
-    @JsonProperty(MAX_VALUE_SIZE_IN_MB_KEY) final int maxValueSizeInMb
+    @JsonProperty(MAX_VALUE_SIZE_IN_MB_KEY) final int maxValueSizeInMb,
+    @JsonProperty(SEED_PROVIDER_TYPE_KEY) final String seedProviderType,
+    @JsonProperty(SEEDS_CURRENT_DC_UNS_PATH_KEY) final String seedsCurrentDcUnsPath,
+    @JsonProperty(SEEDS_EXTERNAL_DCS_UNS_PATHS_KEY) final String seedsExternalDcsUnsPaths,
+    @JsonProperty(SEEDS_NUM_SEEDS_PER_UNS_PATH_KEY) final int seedsNumSeedsPerUnsPath
     ) {
 
     return new CassandraApplicationConfig(clusterName,
@@ -589,7 +640,11 @@ public class CassandraApplicationConfig {
       diskOptimizationStrategy,
       unloggedBatchAcrossPartitionsWarnThreshold,
       enableScriptedUserDefinedFunctions,
-      maxValueSizeInMb);
+      maxValueSizeInMb,
+      seedProviderType,
+      seedsCurrentDcUnsPath,
+      seedsExternalDcsUnsPaths,
+      seedsNumSeedsPerUnsPath);
   }
 
   public static Builder builder() {
@@ -818,6 +873,15 @@ public class CassandraApplicationConfig {
   @JsonProperty(MAX_VALUE_SIZE_IN_MB_KEY)
   private final int maxValueSizeInMb;
 
+  @JsonProperty(SEED_PROVIDER_TYPE_KEY)
+  private final String seedProviderType;
+  @JsonProperty(SEEDS_CURRENT_DC_UNS_PATH_KEY)
+  private final String seedsCurrentDcUnsPath;
+  @JsonProperty(SEEDS_EXTERNAL_DCS_UNS_PATHS_KEY)
+  private final String seedsExternalDcsUnsPaths;
+  @JsonProperty(SEEDS_NUM_SEEDS_PER_UNS_PATH_KEY)
+  private final int seedsNumSeedsPerUnsPath;
+
   public CassandraApplicationConfig(
     String clusterName,
     int numTokens,
@@ -928,8 +992,12 @@ public class CassandraApplicationConfig {
     final String diskOptimizationStrategy,
     final int unloggedBatchAcrossPartitionsWarnThreshold,
     final boolean enableScriptedUserDefinedFunctions,
-    final int maxValueSizeInMb
-    ) {
+    final int maxValueSizeInMb,
+    final String seedProviderType,
+    final String seedsCurrentDcUnsPath,
+    final String seedsExternalDcsUnsPaths,
+    final int seedsNumSeedsPerUnsPath
+  ) {
     this.clusterName = clusterName;
     this.numTokens = numTokens;
     this.hintedHandoffEnabled = hintedHandoffEnabled;
@@ -1041,6 +1109,11 @@ public class CassandraApplicationConfig {
     this.streamingSocketTimeoutInMs = streamingSocketTimeoutInMs;
     this.enableScriptedUserDefinedFunctions = enableScriptedUserDefinedFunctions;
     this.maxValueSizeInMb = maxValueSizeInMb;
+
+    this.seedProviderType = seedProviderType == null ? DEFAULT_SEED_PROVIDER_TYPE : seedProviderType;
+    this.seedsCurrentDcUnsPath = seedsCurrentDcUnsPath;
+    this.seedsExternalDcsUnsPaths = seedsExternalDcsUnsPaths;
+    this.seedsNumSeedsPerUnsPath = seedsNumSeedsPerUnsPath;
   }
 
   public String getClusterName() {
@@ -1480,6 +1553,14 @@ public class CassandraApplicationConfig {
     return maxValueSizeInMb;
   }
 
+  public String getSeedProviderType() { return seedProviderType; }
+
+  public String getSeedsCurrentDcUnsPath() { return seedsCurrentDcUnsPath; }
+
+  public String getSeedsExternalDcsUnsPaths() { return seedsExternalDcsUnsPaths; }
+
+  public int getSeedsNumSeedsPerUnsPath() { return seedsNumSeedsPerUnsPath; }
+
   public Map<String, Object> toMap() {
 
     Map<String, Object> map = new HashMap<>(100);
@@ -1516,7 +1597,7 @@ public class CassandraApplicationConfig {
     map.put(COMMITLOG_SYNC_KEY, commitlogSync);
     map.put(COMMITLOG_SYNC_PERIOD_IN_MS_KEY, commitlogSyncPeriodInMs);
     map.put(COMMITLOG_SEGMENT_SIZE_IN_MB_KEY, commitlogSegmentSizeInMb);
-    map.put(SEED_PROVIDER_KEY, createDcosSeedProvider(seedsUrl));
+    map.put(SEED_PROVIDER_KEY, createSeedProvider(seedProviderType));
     map.put(OTC_COALESCING_STRATEGY, otcCoalescingStrategy);
     map.put(CONCURRENT_READS_KEY, concurrentReads);
     map.put(CONCURRENT_WRITES_KEY, concurrentWrites);
@@ -1730,6 +1811,7 @@ public class CassandraApplicationConfig {
       getUnloggedBatchAcrossPartitionsWarnThreshold() == that.getUnloggedBatchAcrossPartitionsWarnThreshold() &&
       getEnableScriptedUserDefinedFunctions() == that.getEnableScriptedUserDefinedFunctions() &&
       getMaxValueSizeInMb() == that.getMaxValueSizeInMb() &&
+      getSeedsNumSeedsPerUnsPath() == that.getSeedsNumSeedsPerUnsPath() &&
       Objects.equals(getInternodeAuthenticator(), that.getInternodeAuthenticator()) &&
       Objects.equals(getDiskOptimizationStrategy(), that.getDiskOptimizationStrategy()) &&
       Objects.equals(getClusterName(), that.getClusterName()) &&
@@ -1769,7 +1851,10 @@ public class CassandraApplicationConfig {
       Objects.equals(getConcurrentMaterializedViewWrites(),
         that.getConcurrentMaterializedViewWrites()) &&
       Objects.equals(getCommitlogTotalSpaceInMb(),
-        that.getCommitlogTotalSpaceInMb());
+        that.getCommitlogTotalSpaceInMb()) &&
+      Objects.equals(getSeedProviderType(), that.getSeedProviderType()) &&
+      Objects.equals(getSeedsCurrentDcUnsPath(), that.getSeedsCurrentDcUnsPath()) &&
+      Objects.equals(getSeedsExternalDcsUnsPaths(), that.getSeedsExternalDcsUnsPaths());
   }
 
   @Override
@@ -1828,7 +1913,8 @@ public class CassandraApplicationConfig {
       getStreamingSocketTimeoutInMs(), getPhiConvictThreshold(),
       getGcWarnThresholdInMs(), getBufferPoolUseHeapIfExhausted(),
       getDiskOptimizationStrategy(), getUnloggedBatchAcrossPartitionsWarnThreshold(),
-      getEnableScriptedUserDefinedFunctions(), getMaxValueSizeInMb());
+      getEnableScriptedUserDefinedFunctions(), getMaxValueSizeInMb(),
+      getSeedProviderType(), getSeedsCurrentDcUnsPath(), getSeedsExternalDcsUnsPaths(), getSeedsNumSeedsPerUnsPath());
   }
 
   @Override
@@ -1948,6 +2034,10 @@ public class CassandraApplicationConfig {
     private int unloggedBatchAcrossPartitionsWarnThreshold;
     private boolean enableScriptedUserDefinedFunctions;
     private int maxValueSizeInMb;
+    private String seedProviderType;
+    private String seedsCurrentDcUnsPath;
+    private String seedsExternalDcsUnsPaths;
+    private int seedsNumSeedsPerUnsPath;
 
     private Builder() {
 
@@ -2063,6 +2153,8 @@ public class CassandraApplicationConfig {
       streamingSocketTimeoutInMs = DEFAULT_STREAMING_SOCKET_TIMEOUT_IN_MS;
       enableScriptedUserDefinedFunctions = DEFAULT_ENABLE_SCRIPTED_USER_DEFINED_FUNCTIONS;
       maxValueSizeInMb = DEFAULT_MAX_VALUE_SIZE_IN_MB;
+
+      seedProviderType = DEFAULT_SEED_PROVIDER_TYPE;
     }
 
     private Builder(CassandraApplicationConfig config) {
@@ -2177,6 +2269,11 @@ public class CassandraApplicationConfig {
       this.unloggedBatchAcrossPartitionsWarnThreshold = config.unloggedBatchAcrossPartitionsWarnThreshold;
       this.enableScriptedUserDefinedFunctions = config.enableScriptedUserDefinedFunctions;
       this.maxValueSizeInMb = config.maxValueSizeInMb;
+
+      this.seedProviderType = config.seedProviderType;
+      this.seedsCurrentDcUnsPath = config.seedsCurrentDcUnsPath;
+      this.seedsExternalDcsUnsPaths = config.seedsExternalDcsUnsPaths;
+      this.seedsNumSeedsPerUnsPath = config.seedsNumSeedsPerUnsPath;
     }
 
     public String getClusterName() {
@@ -2498,6 +2595,14 @@ public class CassandraApplicationConfig {
     public int getCommitlogTotalSpaceInMb() {
       return commitlogTotalSpaceInMb;
     }
+
+    public String getSeedProviderType() { return seedProviderType; }
+
+    public String getSeedsCurrentDcUnsPath() { return seedsCurrentDcUnsPath; }
+
+    public String getSeedsExternalDcsUnsPaths() { return seedsExternalDcsUnsPaths; }
+
+    public int getSeedsNumSeedsPerUnsPath() { return seedsNumSeedsPerUnsPath; }
 
     public Builder setClusterName(String clusterName) {
       this.clusterName = clusterName;
@@ -2899,6 +3004,26 @@ public class CassandraApplicationConfig {
       return this;
     }
 
+    public Builder setSeedProviderType(String seedProviderType) {
+      this.seedProviderType = seedProviderType;
+      return this;
+    }
+
+    public Builder setSeedsCurrentDcUnsPath(String seedsCurrentDcUnsPath) {
+      this.seedsCurrentDcUnsPath = seedsCurrentDcUnsPath;
+      return this;
+    }
+
+    public Builder setSeedsExternalDcsUnsPaths(String seedsExternalDcsUnsPaths) {
+      this.seedsExternalDcsUnsPaths = seedsExternalDcsUnsPaths;
+      return this;
+    }
+
+    public Builder setSeedsNumSeedsPerUnsPath(int seedsNumSeedsPerUnsPath) {
+      this.seedsNumSeedsPerUnsPath = seedsNumSeedsPerUnsPath;
+      return this;
+    }
+
     public CassandraApplicationConfig build() {
 
       return create(clusterName,
@@ -3010,7 +3135,11 @@ public class CassandraApplicationConfig {
         diskOptimizationStrategy,
         unloggedBatchAcrossPartitionsWarnThreshold,
         enableScriptedUserDefinedFunctions,
-        maxValueSizeInMb);
+        maxValueSizeInMb,
+        seedProviderType,
+        seedsCurrentDcUnsPath,
+        seedsExternalDcsUnsPaths,
+        seedsNumSeedsPerUnsPath);
     }
   }
 
