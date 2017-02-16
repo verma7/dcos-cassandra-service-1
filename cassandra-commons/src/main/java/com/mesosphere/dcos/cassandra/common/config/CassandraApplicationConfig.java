@@ -387,9 +387,10 @@ public class CassandraApplicationConfig {
                     "class_name",
                     "com.uber.cassandra.UnsSeedProvider",
                     "parameters", ImmutableList.of(
-                            ImmutableMap.of(SEEDS_CURRENT_DC_UNS_PATH_KEY, currentDcUnsPath),
-                            ImmutableMap.of(SEEDS_EXTERNAL_DCS_UNS_PATHS_KEY, externalDcsUnsPaths),
-                            ImmutableMap.of(SEEDS_NUM_SEEDS_PER_UNS_PATH_KEY, numSeedsPerUnsPath))
+                            ImmutableMap.of(
+                                    SEEDS_CURRENT_DC_UNS_PATH_KEY, currentDcUnsPath,
+                                    SEEDS_EXTERNAL_DCS_UNS_PATHS_KEY, externalDcsUnsPaths,
+                                    SEEDS_NUM_SEEDS_PER_UNS_PATH_KEY, Integer.toString(numSeedsPerUnsPath)))
             )
     );
   }
