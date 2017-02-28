@@ -54,6 +54,7 @@ public class ConfigurationResourceTest {
         config = mutable.createConfig();
 
         final CuratorFrameworkConfig curatorConfig = mutable.getCuratorConfig();
+        curatorConfig.setServers(server.getConnectString());
         RetryPolicy retryPolicy =
                 (curatorConfig.getOperationTimeout().isPresent()) ?
                         new RetryUntilElapsed(
@@ -70,7 +71,7 @@ public class ConfigurationResourceTest {
         configurationManager =
                 new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
                 config.getServiceConfig().getName(),
-                server.getConnectString(),
+                curatorConfig,
                 config,
                 new ConfigValidator(),
                 stateStore);

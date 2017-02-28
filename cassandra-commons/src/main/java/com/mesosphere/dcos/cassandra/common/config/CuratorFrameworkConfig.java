@@ -12,7 +12,7 @@ import java.util.Optional;
 public class CuratorFrameworkConfig {
 
     @JsonProperty("servers")
-    private final String servers;
+    private String servers;
     @JsonIgnore
     private final Duration sessionTimeout;
     @JsonIgnore
@@ -83,6 +83,10 @@ public class CuratorFrameworkConfig {
 
     public String getServers() {
         return servers;
+    }
+
+    public void setServers(String servers) {
+        this.servers = servers;
     }
 
     public Duration getSessionTimeout() {

@@ -131,6 +131,7 @@ public class ClusterTaskOfferRequirementProviderTest {
         metricConfig = config.getMetricConfig();
 
         final CuratorFrameworkConfig curatorConfig = mutable.getCuratorConfig();
+        curatorConfig.setServers(server.getConnectString());
         RetryPolicy retryPolicy =
                 (curatorConfig.getOperationTimeout().isPresent()) ?
                         new RetryUntilElapsed(
@@ -154,7 +155,7 @@ public class ClusterTaskOfferRequirementProviderTest {
         DefaultConfigurationManager configurationManager =
                 new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
                 config.getServiceConfig().getName(),
-                server.getConnectString(),
+                curatorConfig,
                 config,
                 new ConfigValidator(),
                 stateStore);

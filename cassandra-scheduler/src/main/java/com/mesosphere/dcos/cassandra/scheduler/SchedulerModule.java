@@ -64,7 +64,9 @@ public class SchedulerModule extends AbstractModule {
         CuratorStateStore curatorStateStore = new CuratorStateStore(
                 configuration.getServiceConfig().getName(),
                 curatorConfig.getServers(),
-                retryPolicy);
+                retryPolicy,
+                curatorConfig.getZkusername(),
+                curatorConfig.getZkpassword());
         bind(StateStore.class).toInstance(curatorStateStore);
 
         StatsDMetrics metrics = new StatsDMetrics(
@@ -83,7 +85,7 @@ public class SchedulerModule extends AbstractModule {
             final DefaultConfigurationManager configurationManager =
                     new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
                     configuration.getServiceConfig().getName(),
-                    curatorConfig.getServers(),
+                    curatorConfig,
                     configuration,
                     configValidator,
                     curatorStateStore);

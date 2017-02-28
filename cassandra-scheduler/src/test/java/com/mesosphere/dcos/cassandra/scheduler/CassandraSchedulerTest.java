@@ -116,6 +116,9 @@ public class CassandraSchedulerTest {
                         new EnvironmentVariableSubstitutor(false, true)),
                 Resources.getResource(configName).getFile());
 
+        CuratorFrameworkConfig curatorConfig = config.getCuratorConfig();
+        curatorConfig.setServers(server.getConnectString());
+
         stateStore = new CuratorStateStore(
                 "/" + config.getServiceConfig().getName(),
                 server.getConnectString());
@@ -123,7 +126,7 @@ public class CassandraSchedulerTest {
         DefaultConfigurationManager defaultConfigurationManager
                 = new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
                 "/" + config.createConfig().getServiceConfig().getName(),
-                server.getConnectString(),
+                curatorConfig,
                 config.createConfig(),
                 new ConfigValidator(),
                 stateStore);
