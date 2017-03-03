@@ -142,33 +142,33 @@ public class CassandraDaemonTask extends CassandraTask {
      * @param config   The configuration for the Cassandra node.
      */
     private CassandraDaemonTask(
-        final String name,
-        final String configName,
-        final CassandraTaskExecutor executor,
-        final CassandraConfig config,
-        final Capabilities capabilities,
-        final CassandraData data) {
+            final String name,
+            final String configName,
+            final CassandraTaskExecutor executor,
+            final CassandraConfig config,
+            final Capabilities capabilities,
+            final CassandraData data) {
         super(
-            name,
-            configName,
-            executor,
-            config.getCpus(),
-            config.getMemoryMb(),
-            config.getDiskMb(),
-            VolumeRequirement.VolumeMode.CREATE,
-            config.getDiskType(),
-            Arrays.asList(config.getJmxPort(),
-                config.getApplication().getStoragePort(),
-                config.getApplication().getSslStoragePort(),
-                config.getApplication().getRpcPort(),
-                config.getApplication().getNativeTransportPort()),
-            getDiscoveryInfo(
-                    config.getPublishDiscoveryInfo(),
-                    config.getApplication().getClusterName(),
-                    capabilities,
-                    name,
-                    config.getApplication().getNativeTransportPort()),
-            data);
+                name,
+                configName,
+                executor,
+                config.getCpus(),
+                config.getMemoryMb(),
+                config.getDiskMb(),
+                VolumeRequirement.VolumeMode.CREATE,
+                config.getDiskType(),
+                Arrays.asList(config.getJmxPort(),
+                        config.getApplication().getStoragePort(),
+                        config.getApplication().getSslStoragePort(),
+                        config.getApplication().getRpcPort(),
+                        config.getApplication().getNativeTransportPort()),
+                getDiscoveryInfo(
+                        config.getPublishDiscoveryInfo(),
+                        config.getApplication().getClusterName(),
+                        capabilities,
+                        name,
+                        config.getApplication().getNativeTransportPort()),
+                data);
     }
 
     private CassandraDaemonTask(
@@ -178,15 +178,15 @@ public class CassandraDaemonTask extends CassandraTask {
             final CassandraConfig config,
             final Capabilities capabilities) {
         this(
-            name,
-            configName,
-            executor,
-            config,
-            capabilities,
-            CassandraData.createDaemonData(
-                "",
-                CassandraMode.STARTING,
-                config));
+                name,
+                configName,
+                executor,
+                config,
+                capabilities,
+                CassandraData.createDaemonData(
+                        "",
+                        CassandraMode.STARTING,
+                        config));
     }
 
     private CassandraDaemonTask(final Protos.TaskInfo info) {
@@ -209,15 +209,15 @@ public class CassandraDaemonTask extends CassandraTask {
     @Override
     public CassandraDaemonTask update(CassandraTaskStatus status) {
         if (status.getType() == TYPE.CASSANDRA_DAEMON &&
-            status.getId().equals(getId())) {
+                status.getId().equals(getId())) {
             CassandraDaemonStatus daemonStatus = (CassandraDaemonStatus) status;
             return new CassandraDaemonTask(
-                Protos.TaskInfo.newBuilder(getTaskInfo())
-                    .setData(getData().updateDaemon(
-                        daemonStatus.getState(),
-                        daemonStatus.getMode(),
-                        updateConfig(daemonStatus.getState(), getConfig())
-                    ).getBytes()).build()
+                    Protos.TaskInfo.newBuilder(getTaskInfo())
+                            .setData(getData().updateDaemon(
+                                    daemonStatus.getState(),
+                                    daemonStatus.getMode(),
+                                    updateConfig(daemonStatus.getState(), getConfig())
+                            ).getBytes()).build()
             );
         }
 
@@ -227,24 +227,24 @@ public class CassandraDaemonTask extends CassandraTask {
     @Override
     public CassandraDaemonTask update(Protos.TaskState state) {
         return new CassandraDaemonTask(
-            getBuilder()
-                .setData(getData()
-                    .withState(state)
-                    .getBytes()).build());
+                getBuilder()
+                        .setData(getData()
+                                .withState(state)
+                                .getBytes()).build());
     }
 
     public CassandraDaemonStatus createStatus(Protos.TaskState state,
                                               CassandraMode mode,
                                               Optional<String> message) {
         return CassandraDaemonStatus.create(getStatusBuilder(state, message)
-            .setData(CassandraData.createDaemonStatusData(mode).getBytes())
-            .build());
+                .setData(CassandraData.createDaemonStatusData(mode).getBytes())
+                .build());
     }
 
     public String getVolumePath() {
         return TaskUtils.getVolumePaths(
-            getTaskInfo().getResourcesList())
-            .get(0);
+                getTaskInfo().getResourcesList())
+                .get(0);
     }
 
     @Override
@@ -257,10 +257,10 @@ public class CassandraDaemonTask extends CassandraTask {
     @Override
     public CassandraDaemonTask update(Protos.Offer offer) {
         return new CassandraDaemonTask(
-            getBuilder()
-                .setData(getData().withHostname(offer.getHostname()).getBytes())
-                .setSlaveId(offer.getSlaveId())
-                .build());
+                getBuilder()
+                        .setData(getData().withHostname(offer.getHostname()).getBytes())
+                        .setSlaveId(offer.getSlaveId())
+                        .build());
     }
 
     public CassandraDaemonTask updateConfig(CassandraConfig cassandraConfig,
@@ -272,27 +272,27 @@ public class CassandraDaemonTask extends CassandraTask {
                 .setValue(targetConfigName.toString())
                 .build();
         return new CassandraDaemonTask(getBuilder()
-            .setExecutor(getExecutor().update(executorConfig).getExecutorInfo())
-            .setTaskId(createId(getName()))
-            .setData(getData().withNewConfig(cassandraConfig).getBytes())
-            .clearResources()
-            .addAllResources(TaskUtils.updateResources(
-                cassandraConfig.getCpus(),
-                cassandraConfig.getMemoryMb(),
-                getTaskInfo().getResourcesList()
-            ))
-            .clearLabels()
-            .setLabels(Protos.Labels.newBuilder().addLabels(label).build()).build());
+                .setExecutor(getExecutor().update(executorConfig).getExecutorInfo())
+                .setTaskId(createId(getName()))
+                .setData(getData().withNewConfig(cassandraConfig).getBytes())
+                .clearResources()
+                .addAllResources(TaskUtils.updateResources(
+                        cassandraConfig.getCpus(),
+                        cassandraConfig.getMemoryMb(),
+                        getTaskInfo().getResourcesList()
+                ))
+                .clearLabels()
+                .setLabels(Protos.Labels.newBuilder().addLabels(label).build()).build());
     }
 
     @Override
     public CassandraDaemonTask updateId() {
         return new CassandraDaemonTask(getBuilder()
-            .setTaskId(createId(getName()))
-            .setExecutor(getExecutor().clearId().getExecutorInfo())
-            .setData(getData()
-                .withState(Protos.TaskState.TASK_STAGING).getBytes())
-            .build());
+                .setTaskId(createId(getName()))
+                .setExecutor(getExecutor().clearId().getExecutorInfo())
+                .setData(getData()
+                        .withState(Protos.TaskState.TASK_STAGING).getBytes())
+                .build());
     }
 
     @Nullable
@@ -324,14 +324,14 @@ public class CassandraDaemonTask extends CassandraTask {
             return null;
         }
         DiscoveryInfo.Builder discoveryBuilder = DiscoveryInfo.newBuilder()
-            .setVisibility(DiscoveryInfo.Visibility.EXTERNAL)
-            .setName(nodeName);
+                .setVisibility(DiscoveryInfo.Visibility.EXTERNAL)
+                .setName(nodeName);
         Port.Builder portBuilder = discoveryBuilder.getPortsBuilder().addPortsBuilder()
-            .setNumber(nativePort)
-            .setProtocol("tcp");
+                .setNumber(nativePort)
+                .setProtocol("tcp");
         portBuilder.getLabelsBuilder().addLabelsBuilder()
-            .setKey("VIP_" + UUID.randomUUID())
-            .setValue(String.format("%s:%d", VIP_NODE_NAME, VIP_NODE_PORT));
+                .setKey("VIP_" + UUID.randomUUID())
+                .setValue(String.format("%s:%d", VIP_NODE_NAME, VIP_NODE_PORT));
         return discoveryBuilder.build();
     }
 }

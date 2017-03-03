@@ -62,6 +62,7 @@ public class ServiceConfigResourceTest {
                 Resources.getResource("scheduler.yml").getFile());
 
         final CuratorFrameworkConfig curatorConfig = config.getCuratorConfig();
+        curatorConfig.setServers(server.getConnectString());
         RetryPolicy retryPolicy =
                 (curatorConfig.getOperationTimeout().isPresent()) ?
                         new RetryUntilElapsed(
@@ -82,7 +83,7 @@ public class ServiceConfigResourceTest {
             final DefaultConfigurationManager defaultConfigurationManager =
                     new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
                     configuration.getServiceConfig().getName(),
-                    server.getConnectString(),
+                    curatorConfig,
                     configuration,
                     configValidator,
                     stateStore);

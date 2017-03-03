@@ -80,6 +80,7 @@ public class CassandraStateTest {
         clusterTaskConfig = targetConfig.getClusterTaskConfig();
 
         final CuratorFrameworkConfig curatorConfig = config.getCuratorConfig();
+        curatorConfig.setServers(server.getConnectString());
         RetryPolicy retryPolicy =
                 (curatorConfig.getOperationTimeout().isPresent()) ?
                         new RetryUntilElapsed(
@@ -102,7 +103,7 @@ public class CassandraStateTest {
         DefaultConfigurationManager configurationManager =
                 new DefaultConfigurationManager(CassandraSchedulerConfiguration.class,
                 config.createConfig().getServiceConfig().getName(),
-                server.getConnectString(),
+                curatorConfig,
                 config.createConfig(),
                 new ConfigValidator(),
                 stateStore);

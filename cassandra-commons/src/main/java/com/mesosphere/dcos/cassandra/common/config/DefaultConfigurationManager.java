@@ -25,13 +25,13 @@ public class DefaultConfigurationManager {
     public DefaultConfigurationManager(
             Class<?> configClass,
             String frameworkName,
-            String connectionHost,
+            CuratorFrameworkConfig curatorConfig,
             Configuration newConfiguration,
             ConfigValidator configValidator,
             StateStore stateStore) throws ConfigStoreException {
         this.yamlConfigurationFactory = new YAMLConfigurationFactory(configClass);
         this.stateStore = stateStore;
-        configStore = new CuratorConfigStore<>(yamlConfigurationFactory, frameworkName, connectionHost);
+        configStore = new CuratorConfigStore<>(yamlConfigurationFactory, frameworkName, curatorConfig.getServers(), curatorConfig.getZkusername(), curatorConfig.getZkpassword());
         Configuration oldConfig = null;
         try {
             UUID targetName = getTargetName();
