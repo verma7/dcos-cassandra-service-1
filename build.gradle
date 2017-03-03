@@ -113,7 +113,7 @@ configure(project(':seedprovider')) {
     }
 
     dependencies {
-        compile 'org.apache.cassandra:cassandra-all:3.0.10'
+        compile 'org.apache.cassandra:cassandra-all:3.0.11'
 
     }
 }
