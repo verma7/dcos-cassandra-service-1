@@ -93,6 +93,12 @@ public class CassandraScheduler implements Scheduler, Observer {
     private CassandraRecoveryScheduler recoveryScheduler;
     private Collection<Object> resources;
 
+    // CAUTION: Setting this flag to true will enable the cleaner which unreserves resources
+    // and destroys persistent volumes for tasks that are not expected to be present in zookeeper.
+    // This can happen for example, when zookeeper server configuration points to a fresh instance
+    // of zookeeper and it does not have any state about all the tasks.
+    private boolean enableCleaner;
+
     @Inject
     public CassandraScheduler(
             final ConfigurationManager configurationManager,
@@ -134,6 +140,7 @@ public class CassandraScheduler implements Scheduler, Observer {
         this.stateStore = stateStore;
         this.defaultConfigurationManager = defaultConfigurationManager;
         this.capabilities = capabilities;
+        this.enableCleaner = false;
 
         this.offerFilters = Protos.Filters.newBuilder().setRefuseSeconds(mesosConfig.getRefuseSeconds()).build();
         LOGGER.info("Creating an offer filter with refuse_seconds = {}", mesosConfig.getRefuseSeconds());
@@ -249,13 +256,15 @@ public class CassandraScheduler implements Scheduler, Observer {
                 LOGGER.error("Error occured with recovery scheduler:", t);
             }
 
-            // 4. cleanup
-            ResourceCleanerScheduler cleanerScheduler = getCleanerScheduler();
-            if (cleanerScheduler != null) {
-                try {
-                    acceptedOffers.addAll(cleanerScheduler.resourceOffers(driver, offers));
-                } catch (Throwable t) {
-                    LOGGER.error("Error occured with cleaner scheduler:", t);
+            // 4. cleanup if enabled
+            if (enableCleaner) {
+                ResourceCleanerScheduler cleanerScheduler = getCleanerScheduler();
+                if (cleanerScheduler != null) {
+                    try {
+                        acceptedOffers.addAll(cleanerScheduler.resourceOffers(driver, offers));
+                    } catch (Throwable t) {
+                        LOGGER.error("Error occured with cleaner scheduler:", t);
+                    }
                 }
             }
 
@@ -361,6 +370,7 @@ public class CassandraScheduler implements Scheduler, Observer {
         final CassandraSchedulerConfiguration targetConfig =
                 (CassandraSchedulerConfiguration) defaultConfigurationManager.getTargetConfig();
         final ServiceConfig serviceConfig = targetConfig.getServiceConfig();
+        enableCleaner = serviceConfig.getEnableCleaner();
         final Optional<ByteString> secretBytes = serviceConfig.readSecretBytes();
         final Protos.FrameworkInfo.Builder builder = Protos.FrameworkInfo.newBuilder()
                 .setRole(serviceConfig.getRole())

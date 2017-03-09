@@ -166,6 +166,7 @@ service:
   secret: ${SERVICE_SECRET_FILE:-""}
   failover_timeout_s : ${SERVICE_FAILOVER_TIMEOUT_S:-604800}
   checkpoint : ${SERVICE_CHECKPOINT:-true}
+  enable_cleaner : ${SERVICE_ENABLE_CLEANER:-false}
 mesos:
   servers: ${MESOS_SERVERS:-"master.mesos:2181"}
   path: ${MESOS_PATH:-"/mesos"}

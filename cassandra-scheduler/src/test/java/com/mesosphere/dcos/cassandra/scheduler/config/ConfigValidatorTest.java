@@ -58,7 +58,8 @@ public class ConfigValidatorTest {
       serviceConfig.getPrincipal(),
       serviceConfig.getFailoverTimeoutS(),
       serviceConfig.getSecret(),
-      serviceConfig.isCheckpoint());
+      serviceConfig.isCheckpoint(),
+      serviceConfig.getEnableCleaner());
     mutable.setServiceConfig(updated);
     final ConfigValidator configValidator = new ConfigValidator();
     final List<ConfigValidationError> validate = configValidator.validate(
@@ -84,7 +85,8 @@ public class ConfigValidatorTest {
       serviceConfig.getPrincipal(),
       serviceConfig.getFailoverTimeoutS(),
       serviceConfig.getSecret(),
-      serviceConfig.isCheckpoint());
+      serviceConfig.isCheckpoint(),
+      serviceConfig.getEnableCleaner());
     mutable.setServiceConfig(updated);
     final ConfigValidator configValidator = new ConfigValidator();
     final List<ConfigValidationError> validate = configValidator.validate(configuration.createConfig(), mutable.createConfig());
@@ -108,7 +110,8 @@ public class ConfigValidatorTest {
       serviceConfig.getPrincipal() + "asdf",
       serviceConfig.getFailoverTimeoutS(),
       serviceConfig.getSecret(),
-      serviceConfig.isCheckpoint());
+      serviceConfig.isCheckpoint(),
+      serviceConfig.getEnableCleaner());
     mutable.setServiceConfig(updated);
     final ConfigValidator configValidator = new ConfigValidator();
     final List<ConfigValidationError> validate =
@@ -134,7 +137,8 @@ public class ConfigValidatorTest {
       serviceConfig.getPrincipal(),
       serviceConfig.getFailoverTimeoutS(),
       serviceConfig.getSecret(),
-      serviceConfig.isCheckpoint());
+      serviceConfig.isCheckpoint(),
+      serviceConfig.getEnableCleaner());
     mutable.setServiceConfig(updated);
     final ConfigValidator configValidator = new ConfigValidator();
     final List<ConfigValidationError> validate = configValidator.validate(configuration.createConfig(),mutable.createConfig());
