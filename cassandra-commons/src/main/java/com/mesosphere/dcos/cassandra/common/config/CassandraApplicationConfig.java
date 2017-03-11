@@ -48,6 +48,7 @@ public class CassandraApplicationConfig {
   public static final String MAX_HINT_WINDOW_IN_MS_KEY = "max_hint_window_in_ms";
   public static final String HINTED_HANDOFF_THROTTLE_IN_KB_KEY = "hinted_handoff_throttle_in_kb";
   public static final String MAX_HINTS_DELIVERY_THREADS_KEY = "max_hints_delivery_threads";
+  public static final String HINTS_DIRECTORY_KEY = "hints_directory";
   public static final String BATCHLOG_REPLAY_THROTTLE_IN_KB_KEY = "batchlog_replay_throttle_in_kb";
   public static final String AUTHENTICATOR_KEY = "authenticator";
   public static final String AUTHORIZER_KEY = "authorizer";
@@ -1586,6 +1587,7 @@ public class CassandraApplicationConfig {
         .toAbsolutePath().toString());
     map.put(SAVED_CACHES_DIRECTORY_KEY, Paths.get(CassandraConfig.VOLUME_PATH,
       "saved_caches").toAbsolutePath().toString());
+    map.put(HINTS_DIRECTORY_KEY, Paths.get(CassandraConfig.VOLUME_PATH, "hints").toAbsolutePath().toString());
     map.put(DISK_FAILURE_POLICY_KEY, diskFailurePolicy);
     map.put(COMMIT_FAILURE_POLICY_KEY, commitFailurePolicy);
     map.put(KEY_CACHE_SIZE_IN_MB_KEY, keyCacheSizeInMb);
