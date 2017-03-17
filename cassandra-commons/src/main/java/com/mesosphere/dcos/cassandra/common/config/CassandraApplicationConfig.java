@@ -135,6 +135,11 @@ public class CassandraApplicationConfig {
   public static final String SEEDS_EXTERNAL_DCS_UNS_PATHS_KEY = "external_dcs_uns_paths";
   public static final String SEEDS_NUM_SEEDS_PER_UNS_PATH_KEY = "num_seeds_per_uns_path";
 
+  public static final String REQUEST_THROTTLER_TYPE_KEY = "request_throttler_type";
+  public static final String REQUEST_THROTTLER_KEY = "request_throttler";
+  public static final String REQUEST_THROTTLER_FETCH_LIMITS_PERIOD_IN_SEC_KEY = "fetch_limits_period_in_sec";
+  public static final String REQUEST_THROTTLER_REPLENISH_LIMITS_PERIOD_IN_SEC_KEY = "replenish_limits_period_in_sec";
+
   public static final String OTC_COALESCING_STRATEGY = "otc_coalescing_strategy";
 
   public static final String  ROLES_UPDATE_INTERVAL_IN_MS_KEY = "roles_update_interval_in_ms";
@@ -305,6 +310,7 @@ public class CassandraApplicationConfig {
   public static final int  DEFAULT_MAX_VALUE_SIZE_IN_MB = 256;
 
   public static final String DEFAULT_SEED_PROVIDER_TYPE = "DCOS";
+  public static final String DEFAULT_REQUEST_THROTTLER_TYPE = "NO_OP";
 
   /**
    * Parses a configuration from bytes.
@@ -408,6 +414,31 @@ public class CassandraApplicationConfig {
       return createUnsSeedProvider(seedsCurrentDcUnsPath, seedsExternalDcsUnsPaths, seedsNumSeedsPerUnsPath);
     } else {
       throw new RuntimeException("Unsupported seed provider type: " + seedProviderType);
+    }
+  }
+
+  /**
+   * Creates the appropriate request throttler config based on the type.
+   * @return A configuration of the appropriate request throttler.
+     */
+  public List<Map<String, Object>> createRequestThrottlerConfig() {
+    if (requestThrottlerType.equals("NO_OP")) {
+      return ImmutableList.<Map<String, Object>>of(
+              ImmutableMap.<String, Object>of(
+                      "class_name",
+                      "org.apache.cassandra.service.throttler.NoOpRequestThrottler"));
+    } else if (requestThrottlerType.equals("KEYSPACE_BASED")) {
+      return ImmutableList.<Map<String, Object>>of(
+              ImmutableMap.<String, Object>of(
+                      "class_name",
+                      "org.apache.cassandra.service.throttler.KeyspaceBasedRequestThrottler",
+                      "parameters", ImmutableList.of(
+                              ImmutableMap.of(
+                                      REQUEST_THROTTLER_FETCH_LIMITS_PERIOD_IN_SEC_KEY, Integer.toString(requestThrottlerFetchLimitsPeriodInSec),
+                                      REQUEST_THROTTLER_REPLENISH_LIMITS_PERIOD_IN_SEC_KEY, Integer.toString(requestThrottlerReplenishLimitsPeriodInSec))))
+              );
+    } else {
+      throw new RuntimeException("Unsupported throttler type: " + requestThrottlerType);
     }
   }
 
@@ -529,7 +560,10 @@ public class CassandraApplicationConfig {
     @JsonProperty(SEED_PROVIDER_TYPE_KEY) final String seedProviderType,
     @JsonProperty(SEEDS_CURRENT_DC_UNS_PATH_KEY) final String seedsCurrentDcUnsPath,
     @JsonProperty(SEEDS_EXTERNAL_DCS_UNS_PATHS_KEY) final String seedsExternalDcsUnsPaths,
-    @JsonProperty(SEEDS_NUM_SEEDS_PER_UNS_PATH_KEY) final int seedsNumSeedsPerUnsPath
+    @JsonProperty(SEEDS_NUM_SEEDS_PER_UNS_PATH_KEY) final int seedsNumSeedsPerUnsPath,
+    @JsonProperty(REQUEST_THROTTLER_TYPE_KEY) final String requestThrottlerType,
+    @JsonProperty(REQUEST_THROTTLER_FETCH_LIMITS_PERIOD_IN_SEC_KEY) final int requestThrottlerFetchLimitsPeriodInSec,
+    @JsonProperty(REQUEST_THROTTLER_REPLENISH_LIMITS_PERIOD_IN_SEC_KEY) final int requestThrottlerReplenishLimitsPeriodInSec
     ) {
 
     return new CassandraApplicationConfig(clusterName,
@@ -645,7 +679,10 @@ public class CassandraApplicationConfig {
       seedProviderType,
       seedsCurrentDcUnsPath,
       seedsExternalDcsUnsPaths,
-      seedsNumSeedsPerUnsPath);
+      seedsNumSeedsPerUnsPath,
+      requestThrottlerType,
+      requestThrottlerFetchLimitsPeriodInSec,
+      requestThrottlerReplenishLimitsPeriodInSec);
   }
 
   public static Builder builder() {
@@ -883,6 +920,13 @@ public class CassandraApplicationConfig {
   @JsonProperty(SEEDS_NUM_SEEDS_PER_UNS_PATH_KEY)
   private final int seedsNumSeedsPerUnsPath;
 
+  @JsonProperty(REQUEST_THROTTLER_TYPE_KEY)
+  private final String requestThrottlerType;
+  @JsonProperty(REQUEST_THROTTLER_FETCH_LIMITS_PERIOD_IN_SEC_KEY)
+  private final int requestThrottlerFetchLimitsPeriodInSec;
+  @JsonProperty(REQUEST_THROTTLER_REPLENISH_LIMITS_PERIOD_IN_SEC_KEY)
+  private final int requestThrottlerReplenishLimitsPeriodInSec;
+
   public CassandraApplicationConfig(
     String clusterName,
     int numTokens,
@@ -997,7 +1041,10 @@ public class CassandraApplicationConfig {
     final String seedProviderType,
     final String seedsCurrentDcUnsPath,
     final String seedsExternalDcsUnsPaths,
-    final int seedsNumSeedsPerUnsPath
+    final int seedsNumSeedsPerUnsPath,
+    final String requestThrottlerType,
+    final int requestThrottlerFetchLimitsPeriodInSec,
+    final int requestThrottlerReplenishLimitsPeriodInSec
   ) {
     this.clusterName = clusterName;
     this.numTokens = numTokens;
@@ -1115,6 +1162,10 @@ public class CassandraApplicationConfig {
     this.seedsCurrentDcUnsPath = seedsCurrentDcUnsPath;
     this.seedsExternalDcsUnsPaths = seedsExternalDcsUnsPaths;
     this.seedsNumSeedsPerUnsPath = seedsNumSeedsPerUnsPath;
+
+    this.requestThrottlerType = requestThrottlerType == null ? DEFAULT_REQUEST_THROTTLER_TYPE : requestThrottlerType;
+    this.requestThrottlerFetchLimitsPeriodInSec = requestThrottlerFetchLimitsPeriodInSec;
+    this.requestThrottlerReplenishLimitsPeriodInSec = requestThrottlerReplenishLimitsPeriodInSec;
   }
 
   public String getClusterName() {
@@ -1562,6 +1613,12 @@ public class CassandraApplicationConfig {
 
   public int getSeedsNumSeedsPerUnsPath() { return seedsNumSeedsPerUnsPath; }
 
+  public String getRequestThrottlerType() { return requestThrottlerType; }
+
+  public int getRequestThrottlerFetchLimitsPeriodInSec() { return requestThrottlerFetchLimitsPeriodInSec; }
+
+  public int getRequestThrottlerReplenishLimitsPeriodInSec() { return requestThrottlerReplenishLimitsPeriodInSec; }
+
   public Map<String, Object> toMap() {
 
     Map<String, Object> map = new HashMap<>(100);
@@ -1702,6 +1759,8 @@ public class CassandraApplicationConfig {
     map.put(STREAMING_SOCKET_TIMOUT_IN_MS_KEY, streamingSocketTimeoutInMs);
     map.put(ENABLE_SCRIPTED_USER_DEFINED_FUNCTIONS_KEY, enableScriptedUserDefinedFunctions);
     map.put(MAX_VALUE_SIZE_IN_MB_KEY, maxValueSizeInMb);
+
+    map.put(REQUEST_THROTTLER_KEY, createRequestThrottlerConfig());
     return map;
   }
 
@@ -1814,6 +1873,8 @@ public class CassandraApplicationConfig {
       getEnableScriptedUserDefinedFunctions() == that.getEnableScriptedUserDefinedFunctions() &&
       getMaxValueSizeInMb() == that.getMaxValueSizeInMb() &&
       getSeedsNumSeedsPerUnsPath() == that.getSeedsNumSeedsPerUnsPath() &&
+      getRequestThrottlerFetchLimitsPeriodInSec() == that.getRequestThrottlerFetchLimitsPeriodInSec() &&
+      getRequestThrottlerReplenishLimitsPeriodInSec() == that.getRequestThrottlerFetchLimitsPeriodInSec() &&
       Objects.equals(getInternodeAuthenticator(), that.getInternodeAuthenticator()) &&
       Objects.equals(getDiskOptimizationStrategy(), that.getDiskOptimizationStrategy()) &&
       Objects.equals(getClusterName(), that.getClusterName()) &&
@@ -1856,7 +1917,8 @@ public class CassandraApplicationConfig {
         that.getCommitlogTotalSpaceInMb()) &&
       Objects.equals(getSeedProviderType(), that.getSeedProviderType()) &&
       Objects.equals(getSeedsCurrentDcUnsPath(), that.getSeedsCurrentDcUnsPath()) &&
-      Objects.equals(getSeedsExternalDcsUnsPaths(), that.getSeedsExternalDcsUnsPaths());
+      Objects.equals(getSeedsExternalDcsUnsPaths(), that.getSeedsExternalDcsUnsPaths()) &&
+      Objects.equals(getRequestThrottlerType(), that.getRequestThrottlerType());
   }
 
   @Override
@@ -1916,7 +1978,8 @@ public class CassandraApplicationConfig {
       getGcWarnThresholdInMs(), getBufferPoolUseHeapIfExhausted(),
       getDiskOptimizationStrategy(), getUnloggedBatchAcrossPartitionsWarnThreshold(),
       getEnableScriptedUserDefinedFunctions(), getMaxValueSizeInMb(),
-      getSeedProviderType(), getSeedsCurrentDcUnsPath(), getSeedsExternalDcsUnsPaths(), getSeedsNumSeedsPerUnsPath());
+      getSeedProviderType(), getSeedsCurrentDcUnsPath(), getSeedsExternalDcsUnsPaths(), getSeedsNumSeedsPerUnsPath(),
+      getRequestThrottlerType(), getRequestThrottlerFetchLimitsPeriodInSec(), getRequestThrottlerReplenishLimitsPeriodInSec());
   }
 
   @Override
@@ -2041,6 +2104,10 @@ public class CassandraApplicationConfig {
     private String seedsExternalDcsUnsPaths;
     private int seedsNumSeedsPerUnsPath;
 
+    private String requestThrottlerType;
+    private int requestThrottlerFetchLimitsPeriodInSec;
+    private int requestThrottlerReplenishLimitsPeriodInSec;
+
     private Builder() {
 
       clusterName = DEFAULT_CLUSTER_NAME;
@@ -2157,6 +2224,7 @@ public class CassandraApplicationConfig {
       maxValueSizeInMb = DEFAULT_MAX_VALUE_SIZE_IN_MB;
 
       seedProviderType = DEFAULT_SEED_PROVIDER_TYPE;
+      requestThrottlerType = DEFAULT_REQUEST_THROTTLER_TYPE;
     }
 
     private Builder(CassandraApplicationConfig config) {
@@ -2276,6 +2344,10 @@ public class CassandraApplicationConfig {
       this.seedsCurrentDcUnsPath = config.seedsCurrentDcUnsPath;
       this.seedsExternalDcsUnsPaths = config.seedsExternalDcsUnsPaths;
       this.seedsNumSeedsPerUnsPath = config.seedsNumSeedsPerUnsPath;
+
+      this.requestThrottlerType = config.requestThrottlerType;
+      this.requestThrottlerFetchLimitsPeriodInSec = config.requestThrottlerFetchLimitsPeriodInSec;
+      this.requestThrottlerReplenishLimitsPeriodInSec = config.requestThrottlerReplenishLimitsPeriodInSec;
     }
 
     public String getClusterName() {
@@ -2605,6 +2677,12 @@ public class CassandraApplicationConfig {
     public String getSeedsExternalDcsUnsPaths() { return seedsExternalDcsUnsPaths; }
 
     public int getSeedsNumSeedsPerUnsPath() { return seedsNumSeedsPerUnsPath; }
+
+    public String getRequestThrottlerType() { return requestThrottlerType; }
+
+    public int getRequestThrottlerFetchLimitsPeriodInSec() { return requestThrottlerFetchLimitsPeriodInSec; }
+
+    public int getRequestThrottlerReplenishLimitsPeriodInSec() { return requestThrottlerReplenishLimitsPeriodInSec; }
 
     public Builder setClusterName(String clusterName) {
       this.clusterName = clusterName;
@@ -3026,6 +3104,21 @@ public class CassandraApplicationConfig {
       return this;
     }
 
+    public Builder setRequestThrottlerType(String requestThrottlerType) {
+      this.requestThrottlerType = requestThrottlerType;
+      return this;
+    }
+
+    public Builder setRequestThrottlerFetchLimitsPeriodInSec(int requestThrottlerFetchLimitsPeriodInSec) {
+      this.requestThrottlerFetchLimitsPeriodInSec = requestThrottlerFetchLimitsPeriodInSec;
+      return this;
+    }
+
+    public Builder setRequestThrottlerReplenishLimitsPeriodInSec(int requestThrottlerReplenishLimitsPeriodInSec) {
+      this.requestThrottlerReplenishLimitsPeriodInSec = requestThrottlerReplenishLimitsPeriodInSec;
+      return this;
+    }
+
     public CassandraApplicationConfig build() {
 
       return create(clusterName,
@@ -3141,7 +3234,10 @@ public class CassandraApplicationConfig {
         seedProviderType,
         seedsCurrentDcUnsPath,
         seedsExternalDcsUnsPaths,
-        seedsNumSeedsPerUnsPath);
+        seedsNumSeedsPerUnsPath,
+        requestThrottlerType,
+        requestThrottlerFetchLimitsPeriodInSec,
+        requestThrottlerReplenishLimitsPeriodInSec);
     }
   }
 

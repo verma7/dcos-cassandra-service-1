@@ -147,6 +147,9 @@ cassandra:
      current_dc_uns_path : ${CASSANDRA_CURRENT_DC_UNS_PATH:-""}
      external_dcs_uns_paths : ${CASSANDRA_EXTERNAL_DCS_UNS_PATHS:-""}
      num_seeds_per_uns_path : ${CASSANDRA_NUM_SEEDS_PER_UNS_PATH:-${SEED_NODES:-2} }
+     request_throttler_type: ${CASSANDRA_REQUEST_THROTTLER_TYPE:-"NO_OP"}
+     fetch_limits_period_in_sec: ${CASSANDRA_FETCH_LIMITS_PERIOD_IN_SEC:-12}
+     replenish_limits_period_in_sec: ${CASSANDRA_REPLENISH_LIMITS_PERIOD_IN_SEC:-3}
 nodes: ${NODES:-3}
 seed_nodes: ${SEED_NODES:-2}
 placement_constraint: "${PLACEMENT_CONSTRAINT:-}"
