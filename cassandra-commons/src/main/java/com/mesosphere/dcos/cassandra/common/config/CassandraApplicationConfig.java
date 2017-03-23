@@ -1760,7 +1760,11 @@ public class CassandraApplicationConfig {
     map.put(ENABLE_SCRIPTED_USER_DEFINED_FUNCTIONS_KEY, enableScriptedUserDefinedFunctions);
     map.put(MAX_VALUE_SIZE_IN_MB_KEY, maxValueSizeInMb);
 
-    map.put(REQUEST_THROTTLER_KEY, createRequestThrottlerConfig());
+    // Set the throttler type only if the type is not NO_OP so that older versions of Cassandra
+    // can still parse the configuration.
+    if (!requestThrottlerType.equals("NO_OP")) {
+      map.put(REQUEST_THROTTLER_KEY, createRequestThrottlerConfig());
+    }
     return map;
   }
 
