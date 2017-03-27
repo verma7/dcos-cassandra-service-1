@@ -34,10 +34,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Implements a BackupStorageDriver that provides upload and download
@@ -145,8 +143,19 @@ public class S3StorageDriver implements BackupStorageDriver {
         final File dataDirectory = new File(localLocation);
 
         try {
+
+            List<File> keyspaces = Arrays.asList(dataDirectory.listFiles()).stream()
+                .filter(x -> !StorageUtil.SKIP_SYSTEM_KEYSPACES.contains(x.getName()))
+                .collect(Collectors.toList());
+            if (!ctx.getKeySpaces().isEmpty()) {
+                keyspaces = keyspaces.stream().filter(x -> ctx.getKeySpaces().contains(x.getName())).collect(Collectors.toList());
+            }
+
+            LOGGER.info("Uploading snapshots for keyspaces: {}",
+                    String.join(", ", keyspaces.stream().map(x -> x.getName()).collect(Collectors.toList())));
+
             // Ex: data/<keyspace>/<cf>/snapshots/</snapshot-dir>/<files>
-            for (File keyspaceDir : dataDirectory.listFiles()) {
+            for (File keyspaceDir : keyspaces) {
                 if (keyspaceDir.isFile()) {
                     // Skip any files in the data directory.
                     // Only enter keyspace directory.

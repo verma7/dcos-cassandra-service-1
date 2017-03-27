@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mesosphere.dcos.cassandra.common.tasks.ClusterTaskContext;
 import com.mesosphere.dcos.cassandra.common.util.JsonUtils;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -46,7 +47,9 @@ public class BackupRestoreContext implements ClusterTaskContext {
         @JsonProperty("uses_emc")
         final boolean usesEmc,
         @JsonProperty("restore_type")
-        final String restoreType) {
+        final String restoreType,
+        @JsonProperty("key_spaces")
+        final List<String> keyspaces) {
 
         return new BackupRestoreContext(
             nodeId,
@@ -56,7 +59,8 @@ public class BackupRestoreContext implements ClusterTaskContext {
             accountId,
             secretKey,
             usesEmc,
-            restoreType);
+            restoreType,
+            keyspaces);
     }
 
     @JsonProperty("node_id")
@@ -83,6 +87,9 @@ public class BackupRestoreContext implements ClusterTaskContext {
     @JsonProperty("restore_type")
     private final String restoreType;
 
+    @JsonProperty("key_spaces")
+    private final List<String> keySpaces;
+
     public BackupRestoreContext(final String nodeId,
                                 final String name,
                                 final String externalLocation,
@@ -90,7 +97,8 @@ public class BackupRestoreContext implements ClusterTaskContext {
                                 final String accountId,
                                 final String secretKey,
                                 final boolean usesEmc,
-                                final String restoreType) {
+                                final String restoreType,
+                                final List<String> keySpaces) {
         this.nodeId = nodeId;
         this.externalLocation = externalLocation;
         this.name = name;
@@ -99,6 +107,7 @@ public class BackupRestoreContext implements ClusterTaskContext {
         this.secretKey = secretKey;
         this.usesEmc = usesEmc;
         this.restoreType = restoreType;
+        this.keySpaces = keySpaces;
     }
 
     /**
@@ -180,6 +189,11 @@ public class BackupRestoreContext implements ClusterTaskContext {
     @JsonProperty("restore_type")
     public String getRestoreType() { return restoreType; }
 
+    @JsonProperty("key_spaces")
+    public List<String> getKeySpaces() {
+        return keySpaces;
+    }
+
     @Override
     public String toString() {
         return JsonUtils.toJsonString(this);
@@ -198,13 +212,15 @@ public class BackupRestoreContext implements ClusterTaskContext {
                         that.getLocalLocation()) &&
                 Objects.equals(getAccountId(), that.getAccountId()) &&
                 Objects.equals(getSecretKey(), that.getSecretKey()) &&
-                Objects.equals(getRestoreType(), that.getRestoreType());
+                Objects.equals(getRestoreType(), that.getRestoreType()) &&
+                Objects.equals(getKeySpaces(), that.getKeySpaces());
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(getNodeId(), getName(), getExternalLocation(),
-                getLocalLocation(), getAccountId(), getSecretKey(), getRestoreType());
+                getLocalLocation(), getAccountId(), getSecretKey(), getRestoreType(),
+                getKeySpaces());
     }
 
     @JsonIgnore
@@ -217,7 +233,8 @@ public class BackupRestoreContext implements ClusterTaskContext {
             accountId,
             secretKey,
             usesEmc,
-            restoreType);
+            restoreType,
+            keySpaces);
     }
 
     @JsonIgnore
@@ -230,6 +247,7 @@ public class BackupRestoreContext implements ClusterTaskContext {
             accountId,
             secretKey,
             usesEmc,
-            restoreType);
+            restoreType,
+            keySpaces);
     }
 }

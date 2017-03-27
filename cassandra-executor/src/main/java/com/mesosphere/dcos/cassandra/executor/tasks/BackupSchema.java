@@ -17,6 +17,7 @@ package com.mesosphere.dcos.cassandra.executor.tasks;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
+import com.google.common.annotations.VisibleForTesting;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupRestoreContext;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupSchemaTask;
 import com.mesosphere.dcos.cassandra.executor.CassandraDaemonProcess;
@@ -28,6 +29,7 @@ import org.apache.mesos.executor.ExecutorTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
@@ -42,15 +44,16 @@ public class BackupSchema implements ExecutorTask {
     private CassandraDaemonProcess daemon;
     private ExecutorDriver driver;
     private final BackupRestoreContext context;
-    private BackupSchemaTask cassandraTask;
+    private BackupSchemaTask backupSchemaTask;
     private final BackupStorageDriver backupStorageDriver;
-    private final StorageUtil storageUtil = new StorageUtil();
+    public Cluster cluster;
+    private List<String> keySpaces;
 
   private void sendStatus(ExecutorDriver driver,
                             Protos.TaskState state,
                             String message) {
         final Protos.TaskStatus status =
-        cassandraTask.createStatus(state,Optional.of(message)).getTaskStatus();
+                backupSchemaTask.createStatus(state,Optional.of(message)).getTaskStatus();
         driver.sendStatusUpdate(status);
   }
 
@@ -58,35 +61,36 @@ public class BackupSchema implements ExecutorTask {
      * Constructs a BackupSchema.
      * @param driver The ExecutorDriver used to send task status.
      * @param daemon The CassandraDaemonProcess used to fetch schema.
-     * @param cassandraTask The CassandraTask that will be executed by the
+     * @param backupSchemaTask The CassandraTask that will be executed by the
      *                      BackupSchema.
      */
   public BackupSchema(ExecutorDriver driver,
                       CassandraDaemonProcess daemon,
-                      BackupSchemaTask cassandraTask,
+                      BackupSchemaTask backupSchemaTask,
                       BackupStorageDriver backupStorageDriver) {
       this.daemon = daemon;
       this.driver = driver;
-      this.cassandraTask = cassandraTask;
+      this.backupSchemaTask = backupSchemaTask;
       this.backupStorageDriver = backupStorageDriver;
-      context = cassandraTask.getBackupRestoreContext();
+      context = backupSchemaTask.getBackupRestoreContext();
+      cluster = null;
+      keySpaces = Collections.emptyList();
   }
 
   @Override
   public void run() {
-      Cluster cluster = null;
-
       try {
           // Send TASK_RUNNING
           sendStatus(driver, Protos.TaskState.TASK_RUNNING,
                   "Started taking schema backup");
 
           cluster = Cluster.builder().addContactPoint(daemon.getProbe().getEndpoint()).build();
-          final List<String> keyspaces = StorageUtil.filterSystemKeyspaces(daemon.getNonSystemKeySpaces());
 
-          if (keyspaces.size() > 0) {
+          keySpaces = getKeySpaces();
+
+          if (keySpaces.size() > 0) {
               StringBuilder sb = new StringBuilder();
-              for (String keyspace : keyspaces) {
+              for (String keyspace : keySpaces) {
                   LOGGER.info("Taking schema backup for keyspace: {}", keyspace);
                   KeyspaceMetadata ksm = cluster.getMetadata().getKeyspace(keyspace);
                   sb.append(ksm.exportAsString()).append(System.getProperty("line.separator"));
@@ -96,7 +100,7 @@ public class BackupSchema implements ExecutorTask {
 
           // Send TASK_FINISHED
           sendStatus(driver, Protos.TaskState.TASK_FINISHED,
-                  "Finished taking schema backup for keyspaces: " + keyspaces);
+                  "Finished taking schema backup for keyspaces: " + keySpaces);
       } catch (Throwable t){
           LOGGER.error("Schema backup failed. Reason: ", t);
           sendStatus(driver, Protos.TaskState.TASK_FAILED, t.getMessage());
@@ -109,5 +113,11 @@ public class BackupSchema implements ExecutorTask {
   @Override
   public void stop(Future<?> future) {
       future.cancel(true);
+  }
+
+  @VisibleForTesting
+  public List<String> getKeySpaces() {
+      return context.getKeySpaces().isEmpty() ?
+              StorageUtil.filterSystemKeySpaces(daemon.getNonSystemKeySpaces()) : context.getKeySpaces();
   }
 }

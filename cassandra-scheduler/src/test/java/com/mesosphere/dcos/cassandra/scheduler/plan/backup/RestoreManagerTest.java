@@ -2,7 +2,6 @@ package com.mesosphere.dcos.cassandra.scheduler.plan.backup;
 
 import com.mesosphere.dcos.cassandra.common.offer.ClusterTaskOfferRequirementProvider;
 import com.mesosphere.dcos.cassandra.common.persistence.PersistenceException;
-import com.mesosphere.dcos.cassandra.common.serialization.SerializationException;
 import com.mesosphere.dcos.cassandra.common.tasks.CassandraDaemonTask;
 import com.mesosphere.dcos.cassandra.common.tasks.CassandraState;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupRestoreContext;
@@ -62,7 +61,7 @@ public class RestoreManagerTest {
 
     @Test
     public void testInitialWithState() throws IOException {
-        final BackupRestoreContext context =  BackupRestoreContext.create("", "", "", "", "", "", false, "");
+        final BackupRestoreContext context =  BackupRestoreContext.create("", "", "", "", "", "", false, "", Collections.emptyList());
         when(mockState.fetchProperty(RestoreManager.RESTORE_KEY)).thenReturn(
                 SerializationUtils.toJsonString(context).getBytes(StandardCharsets.UTF_8));
         RestoreManager manager = new RestoreManager(mockCassandraState, mockProvider, mockState);

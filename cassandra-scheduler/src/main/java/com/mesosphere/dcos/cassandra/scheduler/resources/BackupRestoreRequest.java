@@ -3,9 +3,11 @@ package com.mesosphere.dcos.cassandra.scheduler.resources;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mesosphere.dcos.cassandra.common.tasks.ClusterTaskRequest;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupRestoreContext;
-
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotEmpty;
+
+import java.util.Collections;
+import java.util.List;
 
 public class BackupRestoreRequest implements ClusterTaskRequest {
   @JsonProperty("backup_name")
@@ -33,6 +35,9 @@ public class BackupRestoreRequest implements ClusterTaskRequest {
 
   @JsonProperty("restore_type")
   private String restoreType;
+
+  @JsonProperty("key_spaces")
+  private List<String> keySpaces;
 
   public String getName() {
     return name;
@@ -94,6 +99,14 @@ public class BackupRestoreRequest implements ClusterTaskRequest {
 
   public void setRestoreType(String restoreType) { this.restoreType = restoreType; }
 
+  public List<String> getKeySpaces() {
+    return keySpaces != null ? keySpaces : Collections.emptyList();
+  }
+
+  public void setKeySpaces(List<String> keySpaces) {
+    this.keySpaces = keySpaces;
+  }
+
   public boolean usesEmc() {
     if (usesEmc != null) {
       return usesEmc;
@@ -139,9 +152,9 @@ public class BackupRestoreRequest implements ClusterTaskRequest {
             ", azureKey='" + azureKey + '\'' +
             ", usesEmc='" + usesEmc + '\'' +
             ", restoreType='" + restoreType + '\'' +
+            ", keyspaces='" + String.join(", ", keySpaces) + '\'' +
             '}';
   }
-
 
   public BackupRestoreContext toContext() {
     String accountId;
@@ -162,7 +175,8 @@ public class BackupRestoreRequest implements ClusterTaskRequest {
         accountId,
         secretKey,
         usesEmc(),
-        getRestoreType());
+        getRestoreType(),
+        getKeySpaces());
   }
 
   private static boolean isAzure(String externalLocation) {

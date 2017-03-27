@@ -92,7 +92,8 @@ public class CassandraData {
                 context.getAccountId(),
                 context.getSecretKey(),
                 context.getUsesEmc(),
-                context.getRestoreType());
+                context.getRestoreType(),
+                context.getKeySpaces());
     }
 
     public static final CassandraData createBackupSchemaStatusData() {
@@ -113,7 +114,8 @@ public class CassandraData {
                 context.getAccountId(),
                 context.getSecretKey(),
                 context.getUsesEmc(),
-                context.getRestoreType());
+                context.getRestoreType(),
+                context.getKeySpaces());
     }
 
     public static final CassandraData createBackupSnapshotStatusData() {
@@ -133,7 +135,8 @@ public class CassandraData {
             context.getAccountId(),
             context.getSecretKey(),
             context.getUsesEmc(),
-            context.getRestoreType());
+            context.getRestoreType(),
+            context.getKeySpaces());
     }
 
     public static final CassandraData createBackupUploadStatusData() {
@@ -153,7 +156,8 @@ public class CassandraData {
             context.getAccountId(),
             context.getSecretKey(),
             context.getUsesEmc(),
-            context.getRestoreType());
+            context.getRestoreType(),
+            context.getKeySpaces());
     }
 
     public static final CassandraData createSnapshotDownloadStatusData() {
@@ -173,7 +177,8 @@ public class CassandraData {
             context.getAccountId(),
             context.getSecretKey(),
             context.getUsesEmc(),
-            context.getRestoreType());
+            context.getRestoreType(),
+            context.getKeySpaces());
     }
 
     public static final CassandraData createRestoreSnapshotStatusData() {
@@ -193,7 +198,8 @@ public class CassandraData {
                 context.getAccountId(),
                 context.getSecretKey(),
                 context.getUsesEmc(),
-                context.getRestoreType());
+                context.getRestoreType(),
+                context.getKeySpaces());
     }
 
     public static final CassandraData createRestoreSchemaStatusData() {
@@ -284,7 +290,8 @@ public class CassandraData {
                           final String accountId,
                           final String secretKey,
                           final boolean usesEmc,
-                          final String restoreType) {
+                          final String restoreType,
+                          final List<String> keySpaces) {
 
         data = CassandraProtos.CassandraData.newBuilder()
             .setType(type.ordinal())
@@ -298,6 +305,7 @@ public class CassandraData {
             .setState(Protos.TaskState.TASK_STAGING.ordinal())
             .setUsesEmc(usesEmc)
             .setRestoreType(restoreType)
+            .addAllKeySpaces(keySpaces)
             .build();
 
     }
@@ -412,7 +420,8 @@ public class CassandraData {
             data.getAccoundId(),
             data.getSecretKey(),
             data.getUsesEmc(),
-            data.getRestoreType());
+            data.getRestoreType(),
+            data.getKeySpacesList());
     }
 
     public UpgradeSSTableContext getUpgradeSSTableContext() {

@@ -20,7 +20,7 @@ public final class StorageUtil {
   private static final Logger logger = LoggerFactory.getLogger(StorageUtil.class);
   private static final Set<String> SKIP_KEYSPACES = ImmutableSet.of("system");
   private static final Map<String, List<String>> SKIP_COLUMN_FAMILIES = ImmutableMap.of();
-  private static final Set<String> SKIP_SYSTEM_KEYSPACES = ImmutableSet.of("system", "system_distributed", "system_traces", "system_schema", "system_auth");
+  public static final Set<String> SKIP_SYSTEM_KEYSPACES = ImmutableSet.of("system", "system_distributed", "system_traces", "system_schema", "system_auth");
   public static final String SCHEMA_FILE = "schema.cql";
 
   /**
@@ -57,7 +57,7 @@ public final class StorageUtil {
       }
 
     // Requested snapshot directory not found
-    return Optional.of(validSnapshot);
+    return Optional.ofNullable(validSnapshot);
   }
 
   static boolean isAzure(String externalLocation) {
@@ -65,8 +65,8 @@ public final class StorageUtil {
     return StringUtils.isNotEmpty(externalLocation) && externalLocation.startsWith("azure:");
   }
 
-  public static List<String> filterSystemKeyspaces(List<String> keyspaces) {
-    return keyspaces.stream()
+  public static List<String> filterSystemKeySpaces(List<String> keySpaces) {
+    return keySpaces.stream()
             .filter(k -> !SKIP_SYSTEM_KEYSPACES.contains(k))
             .collect(Collectors.toList());
   }

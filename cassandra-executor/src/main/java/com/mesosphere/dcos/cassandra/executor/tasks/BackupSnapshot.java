@@ -15,8 +15,10 @@
  */
 package com.mesosphere.dcos.cassandra.executor.tasks;
 
+import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupRestoreContext;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupSnapshotTask;
 import com.mesosphere.dcos.cassandra.executor.CassandraDaemonProcess;
+import com.mesosphere.dcos.cassandra.executor.backup.StorageUtil;
 import org.apache.mesos.ExecutorDriver;
 import org.apache.mesos.Protos;
 import org.apache.mesos.executor.ExecutorTask;
@@ -38,6 +40,7 @@ public class BackupSnapshot implements ExecutorTask {
     private CassandraDaemonProcess daemon;
     private ExecutorDriver driver;
     private BackupSnapshotTask cassandraTask;
+    private final BackupRestoreContext context;
 
     private void sendStatus(ExecutorDriver driver,
                             Protos.TaskState state,
@@ -60,6 +63,7 @@ public class BackupSnapshot implements ExecutorTask {
         this.daemon = daemon;
         this.driver = driver;
         this.cassandraTask = cassandraTask;
+        context = cassandraTask.getBackupRestoreContext();
     }
 
     @Override
@@ -69,10 +73,15 @@ public class BackupSnapshot implements ExecutorTask {
             sendStatus(driver, Protos.TaskState.TASK_RUNNING, "Started taking snapshot");
 
             final String snapshotName = this.cassandraTask.getBackupRestoreContext().getName();
-            final List<String> nonSystemKeyspaces = daemon.getNonSystemKeySpaces();
-            LOGGER.info("Started taking snapshot for non system keyspaces: {}", nonSystemKeyspaces);
+            LOGGER.info("Cassandra Daemon Process all keyspace {}, non system keyspaces {}, context keyspaces {}",
+                    daemon.getKeySpaces(),
+                    daemon.getNonSystemKeySpaces(),
+                    context.getKeySpaces());
+            final List<String> keyspaces = context.getKeySpaces().isEmpty() ?
+                    StorageUtil.filterSystemKeySpaces(daemon.getNonSystemKeySpaces()) : context.getKeySpaces();
+            LOGGER.info("Started taking snapshot for non system keyspaces: {}", keyspaces);
 
-            for (String keyspace : nonSystemKeyspaces) {
+            for (String keyspace : keyspaces) {
                 LOGGER.info("Clearing snapshot {} for keyspace: {}", snapshotName, keyspace);
                 daemon.clearSnapshot(snapshotName, keyspace);
                 LOGGER.info("Taking snapshot {} for keyspace: {}", snapshotName, keyspace);
@@ -81,7 +90,7 @@ public class BackupSnapshot implements ExecutorTask {
 
             // Send TASK_FINISHED
             sendStatus(driver, Protos.TaskState.TASK_FINISHED,
-                    "Finished taking snapshot for non system keyspaces: " + nonSystemKeyspaces);
+                    "Finished taking snapshot for non system keyspaces: " + keyspaces);
         } catch (Throwable t) {
             LOGGER.error("Snapshot failed",t);
             sendStatus(driver, Protos.TaskState.TASK_FAILED, t.getMessage());

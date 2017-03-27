@@ -1,5 +1,6 @@
 package com.mesosphere.dcos.cassandra.scheduler.plan.backup;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.mesosphere.dcos.cassandra.common.tasks.CassandraDaemonTask;
 import com.mesosphere.dcos.cassandra.common.tasks.CassandraTask;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupRestoreContext;
@@ -38,5 +39,10 @@ public class BackupSnapshotStep extends AbstractClusterTaskStep {
             return Optional.empty();
         }
         return Optional.of(cassandraState.getOrCreateBackupSnapshot(daemonTask, context));
+    }
+
+    @VisibleForTesting
+    public BackupRestoreContext getContext() {
+        return context;
     }
 }

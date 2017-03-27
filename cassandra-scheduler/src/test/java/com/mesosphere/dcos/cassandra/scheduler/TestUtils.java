@@ -6,6 +6,7 @@ import org.apache.mesos.Protos;
 import org.apache.mesos.offer.ResourceUtils;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 public class TestUtils {
@@ -38,6 +39,8 @@ public class TestUtils {
 
         return result;
     }
+
+    public static List<String> keySpaces = Arrays.asList("keyspace1", "keyspace2", "keyspace3");
 
     public static Protos.Offer generateOffer(
             String frameworkId,
