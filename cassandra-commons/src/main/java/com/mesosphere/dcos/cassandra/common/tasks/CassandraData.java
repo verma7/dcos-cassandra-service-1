@@ -93,7 +93,8 @@ public class CassandraData {
                 context.getSecretKey(),
                 context.getUsesEmc(),
                 context.getRestoreType(),
-                context.getKeySpaces());
+                context.getKeySpaces(),
+                context.getMinFreeSpacePercent());
     }
 
     public static final CassandraData createBackupSchemaStatusData() {
@@ -115,7 +116,8 @@ public class CassandraData {
                 context.getSecretKey(),
                 context.getUsesEmc(),
                 context.getRestoreType(),
-                context.getKeySpaces());
+                context.getKeySpaces(),
+                context.getMinFreeSpacePercent());
     }
 
     public static final CassandraData createBackupSnapshotStatusData() {
@@ -136,7 +138,8 @@ public class CassandraData {
             context.getSecretKey(),
             context.getUsesEmc(),
             context.getRestoreType(),
-            context.getKeySpaces());
+            context.getKeySpaces(),
+            context.getMinFreeSpacePercent());
     }
 
     public static final CassandraData createBackupUploadStatusData() {
@@ -157,7 +160,8 @@ public class CassandraData {
             context.getSecretKey(),
             context.getUsesEmc(),
             context.getRestoreType(),
-            context.getKeySpaces());
+            context.getKeySpaces(),
+            context.getMinFreeSpacePercent());
     }
 
     public static final CassandraData createSnapshotDownloadStatusData() {
@@ -178,7 +182,8 @@ public class CassandraData {
             context.getSecretKey(),
             context.getUsesEmc(),
             context.getRestoreType(),
-            context.getKeySpaces());
+            context.getKeySpaces(),
+            context.getMinFreeSpacePercent());
     }
 
     public static final CassandraData createRestoreSnapshotStatusData() {
@@ -199,7 +204,8 @@ public class CassandraData {
                 context.getSecretKey(),
                 context.getUsesEmc(),
                 context.getRestoreType(),
-                context.getKeySpaces());
+                context.getKeySpaces(),
+                context.getMinFreeSpacePercent());
     }
 
     public static final CassandraData createRestoreSchemaStatusData() {
@@ -291,7 +297,8 @@ public class CassandraData {
                           final String secretKey,
                           final boolean usesEmc,
                           final String restoreType,
-                          final List<String> keySpaces) {
+                          final List<String> keySpaces,
+                          final float minFreeSpacePercent) {
 
         data = CassandraProtos.CassandraData.newBuilder()
             .setType(type.ordinal())
@@ -306,6 +313,7 @@ public class CassandraData {
             .setUsesEmc(usesEmc)
             .setRestoreType(restoreType)
             .addAllKeySpaces(keySpaces)
+            .setMinFreeSpacePercent(minFreeSpacePercent)
             .build();
 
     }
@@ -421,7 +429,8 @@ public class CassandraData {
             data.getSecretKey(),
             data.getUsesEmc(),
             data.getRestoreType(),
-            data.getKeySpacesList());
+            data.getKeySpacesList(),
+            data.getMinFreeSpacePercent());
     }
 
     public UpgradeSSTableContext getUpgradeSSTableContext() {

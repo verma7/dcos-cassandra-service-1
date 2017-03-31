@@ -5,6 +5,8 @@ import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupSchemaTask;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupUploadTask;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.DownloadSnapshotTask;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.RestoreSchemaTask;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +20,7 @@ public class StorageDriverFactory {
   public static BackupStorageDriver createStorageDriver(CassandraTask cassandraTask) {
     String externalLocation = null;
     switch (cassandraTask.getType()) {
-      case BACKUP_SNAPSHOT:
+      case BACKUP_UPLOAD:
         externalLocation = ((BackupUploadTask)cassandraTask).getBackupRestoreContext().getExternalLocation();
         break;
       case BACKUP_SCHEMA:
@@ -38,6 +40,9 @@ public class StorageDriverFactory {
     if (StorageUtil.isAzure(externalLocation)) {
       LOGGER.info("Using the Azure Driver.");
       return new AzureStorageDriver();
+    } else if (StringUtils.isNotEmpty(externalLocation) && externalLocation.startsWith("file:")) {
+      LOGGER.info("Using the File Driver.");
+      return new FileStorageDriver();
     } else {
       LOGGER.info("Using the S3 Driver.");
       return new S3StorageDriver();

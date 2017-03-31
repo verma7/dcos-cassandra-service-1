@@ -39,6 +39,9 @@ public class BackupRestoreRequest implements ClusterTaskRequest {
   @JsonProperty("key_spaces")
   private List<String> keySpaces;
 
+  @JsonProperty("min_free_space_percent")
+  private Float minFreeSpacePercent;
+
   public String getName() {
     return name;
   }
@@ -107,6 +110,14 @@ public class BackupRestoreRequest implements ClusterTaskRequest {
     this.keySpaces = keySpaces;
   }
 
+  public Float getMinFreeSpacePercent() {
+    return minFreeSpacePercent != null ? minFreeSpacePercent : 60f;
+  }
+
+  public void setMinFreeSpacePercent(Float minFreeSpacePercent) {
+    this.minFreeSpacePercent = minFreeSpacePercent;
+  }
+
   public boolean usesEmc() {
     if (usesEmc != null) {
       return usesEmc;
@@ -117,7 +128,7 @@ public class BackupRestoreRequest implements ClusterTaskRequest {
 
   public boolean isValid() {
     return (StringUtils.isNotBlank(name) && externalLocation != null)
-            && (isValidS3Request() || isValidAzureRequest())
+            && (isValidS3Request() || isValidAzureRequest() || isValidFileRequest())
             && isValidRestoreType();
   }
 
@@ -137,6 +148,10 @@ public class BackupRestoreRequest implements ClusterTaskRequest {
     return azureAccount != null && azureKey != null && externalLocation.startsWith("azure:");
   }
 
+  private boolean isValidFileRequest() {
+    return externalLocation.startsWith("file:");
+  }
+
   private boolean isValidRestoreType() {
     return restoreType == null || restoreType.isEmpty() ? true: restoreType.matches("existing|new");
   }
@@ -153,6 +168,7 @@ public class BackupRestoreRequest implements ClusterTaskRequest {
             ", usesEmc='" + usesEmc + '\'' +
             ", restoreType='" + restoreType + '\'' +
             ", keyspaces='" + String.join(", ", keySpaces) + '\'' +
+            ", minFreeSpacePercent='" + minFreeSpacePercent + '\'' +
             '}';
   }
 
@@ -162,6 +178,9 @@ public class BackupRestoreRequest implements ClusterTaskRequest {
     if (isAzure(getExternalLocation())) {
       accountId = getAzureAccount();
       secretKey = getAzureKey();
+    } else if (isFile(getExternalLocation()))  {
+       accountId = "";
+       secretKey = "";
     } else {
       accountId = getS3AccessKey();
       secretKey = getS3SecretKey();
@@ -176,10 +195,15 @@ public class BackupRestoreRequest implements ClusterTaskRequest {
         secretKey,
         usesEmc(),
         getRestoreType(),
-        getKeySpaces());
+        getKeySpaces(),
+        getMinFreeSpacePercent());
   }
 
   private static boolean isAzure(String externalLocation) {
     return StringUtils.isNotEmpty(externalLocation) && externalLocation.startsWith("azure:");
+  }
+
+  private static boolean isFile(String externalLocation) {
+	return StringUtils.isNotEmpty(externalLocation) && externalLocation.startsWith("file:");
   }
 }

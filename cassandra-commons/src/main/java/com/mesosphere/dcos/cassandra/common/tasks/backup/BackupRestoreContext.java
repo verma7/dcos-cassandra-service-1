@@ -49,7 +49,9 @@ public class BackupRestoreContext implements ClusterTaskContext {
         @JsonProperty("restore_type")
         final String restoreType,
         @JsonProperty("key_spaces")
-        final List<String> keyspaces) {
+        final List<String> keyspaces,
+        @JsonProperty("min_free_space_percent")
+        final float minFreeSpacePercent) {
 
         return new BackupRestoreContext(
             nodeId,
@@ -60,7 +62,8 @@ public class BackupRestoreContext implements ClusterTaskContext {
             secretKey,
             usesEmc,
             restoreType,
-            keyspaces);
+            keyspaces,
+            minFreeSpacePercent);
     }
 
     @JsonProperty("node_id")
@@ -90,6 +93,9 @@ public class BackupRestoreContext implements ClusterTaskContext {
     @JsonProperty("key_spaces")
     private final List<String> keySpaces;
 
+    @JsonProperty("min_free_space_percent")
+    private final float minFreeSpacePercent;
+
     public BackupRestoreContext(final String nodeId,
                                 final String name,
                                 final String externalLocation,
@@ -98,7 +104,8 @@ public class BackupRestoreContext implements ClusterTaskContext {
                                 final String secretKey,
                                 final boolean usesEmc,
                                 final String restoreType,
-                                final List<String> keySpaces) {
+                                final List<String> keySpaces,
+                                final float minFreeSpacePercent) {
         this.nodeId = nodeId;
         this.externalLocation = externalLocation;
         this.name = name;
@@ -108,6 +115,7 @@ public class BackupRestoreContext implements ClusterTaskContext {
         this.usesEmc = usesEmc;
         this.restoreType = restoreType;
         this.keySpaces = keySpaces;
+        this.minFreeSpacePercent = minFreeSpacePercent;
     }
 
     /**
@@ -194,6 +202,16 @@ public class BackupRestoreContext implements ClusterTaskContext {
         return keySpaces;
     }
 
+    /**
+     * Gets the free space requirement of the node for the backup.
+     *
+     * @return The free space requirement of the node for the backup in percentage.
+     */
+    @JsonProperty("min_free_space_percent")
+    public float getMinFreeSpacePercent() {
+        return minFreeSpacePercent;
+    }
+
     @Override
     public String toString() {
         return JsonUtils.toJsonString(this);
@@ -213,14 +231,15 @@ public class BackupRestoreContext implements ClusterTaskContext {
                 Objects.equals(getAccountId(), that.getAccountId()) &&
                 Objects.equals(getSecretKey(), that.getSecretKey()) &&
                 Objects.equals(getRestoreType(), that.getRestoreType()) &&
-                Objects.equals(getKeySpaces(), that.getKeySpaces());
+                Objects.equals(getKeySpaces(), that.getKeySpaces()) &&
+                Objects.equals(getMinFreeSpacePercent(), that.getMinFreeSpacePercent());
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(getNodeId(), getName(), getExternalLocation(),
                 getLocalLocation(), getAccountId(), getSecretKey(), getRestoreType(),
-                getKeySpaces());
+                getKeySpaces(), getMinFreeSpacePercent());
     }
 
     @JsonIgnore
@@ -234,7 +253,8 @@ public class BackupRestoreContext implements ClusterTaskContext {
             secretKey,
             usesEmc,
             restoreType,
-            keySpaces);
+            keySpaces,
+            minFreeSpacePercent);
     }
 
     @JsonIgnore
@@ -248,6 +268,7 @@ public class BackupRestoreContext implements ClusterTaskContext {
             secretKey,
             usesEmc,
             restoreType,
-            keySpaces);
+            keySpaces,
+            minFreeSpacePercent);
     }
 }

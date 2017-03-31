@@ -91,4 +91,6 @@ message CassandraData{
     optional bool usesEmc = 17;
 
     optional string restoreType = 18;
+
+    optional float minFreeSpacePercent = 19;
 }
