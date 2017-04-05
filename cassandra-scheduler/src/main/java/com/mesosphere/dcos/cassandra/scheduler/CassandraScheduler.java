@@ -7,6 +7,7 @@ import com.google.inject.name.Named;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.TextFormat;
 import com.mesosphere.dcos.cassandra.common.config.*;
+import com.mesosphere.dcos.cassandra.common.metrics.StatsDMetrics;
 import com.mesosphere.dcos.cassandra.common.offer.LogOperationRecorder;
 import com.mesosphere.dcos.cassandra.common.offer.PersistentOfferRequirementProvider;
 import com.mesosphere.dcos.cassandra.common.offer.PersistentOperationRecorder;
@@ -93,6 +94,9 @@ public class CassandraScheduler implements Scheduler, Observer {
     private CassandraRecoveryScheduler recoveryScheduler;
     private Collection<Object> resources;
 
+    private final StatsDMetrics metrics;
+    private static String schedulerMetricsName;
+
     // CAUTION: Setting this flag to true will enable the cleaner which unreserves resources
     // and destroys persistent volumes for tasks that are not expected to be present in zookeeper.
     // This can happen for example, when zookeeper server configuration points to a fresh instance
@@ -100,7 +104,7 @@ public class CassandraScheduler implements Scheduler, Observer {
     private boolean enableCleaner;
 
     @Inject
-    public CassandraScheduler(
+    public CassandraScheduler (
             final ConfigurationManager configurationManager,
             final MesosConfig mesosConfig,
             final PersistentOfferRequirementProvider offerRequirementProvider,
@@ -116,7 +120,8 @@ public class CassandraScheduler implements Scheduler, Observer {
             final ScheduledExecutorService executor,
             final StateStore stateStore,
             final DefaultConfigurationManager defaultConfigurationManager,
-            final Capabilities capabilities) {
+            final Capabilities capabilities,
+            final StatsDMetrics metrics) {
         this.mesosConfig = mesosConfig;
         this.cassandraState = cassandraState;
         this.reconciler = new DefaultReconciler(stateStore);
@@ -141,6 +146,8 @@ public class CassandraScheduler implements Scheduler, Observer {
         this.defaultConfigurationManager = defaultConfigurationManager;
         this.capabilities = capabilities;
         this.enableCleaner = false;
+        this.metrics = metrics;
+        schedulerMetricsName = "registers";
 
         this.offerFilters = Protos.Filters.newBuilder().setRefuseSeconds(mesosConfig.getRefuseSeconds()).build();
         LOGGER.info("Creating an offer filter with refuse_seconds = {}", mesosConfig.getRefuseSeconds());
@@ -198,6 +205,7 @@ public class CassandraScheduler implements Scheduler, Observer {
                     new ConnectionResource(capabilities, cassandraState, configurationManager),
                     // TODO(nick) rename upstream to StringPropertyDeserializer:
                     new StateResource(stateStore, new JsonPropertyDeserializer())));
+            metrics.gauge(schedulerMetricsName, 1);
         } catch (Throwable t) {
             String error = "An error occurred when registering " +
                     "the framework and initializing the execution plan.";
@@ -212,6 +220,7 @@ public class CassandraScheduler implements Scheduler, Observer {
         LOGGER.info("Re-registered with master: {}", masterInfo);
         reconciler.start();
         suppressOrRevive();
+        metrics.gauge(schedulerMetricsName, 1);
     }
 
     @Override

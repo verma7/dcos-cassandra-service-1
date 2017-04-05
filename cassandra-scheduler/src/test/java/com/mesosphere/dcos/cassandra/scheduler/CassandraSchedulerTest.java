@@ -163,7 +163,8 @@ public class CassandraSchedulerTest {
                 executorService,
                 stateStore,
                 defaultConfigurationManager,
-                capabilities);
+                capabilities,
+                metrics);
 
         masterInfo = TestUtils.generateMasterInfo();
 
