@@ -35,8 +35,8 @@ cassandra:
      authenticator: "AllowAllAuthenticator"
      authorizer: "AllowAllAuthorizer"
      role_manager: "CassandraRoleManager"
-     roles_validity_in_ms: 2000
-     permissions_validity_in_ms: 2000
+     roles_validity_in_ms: ${CASSANDRA_ROLES_VALIDITY_IN_MS:-2000}
+     permissions_validity_in_ms: ${CASSANDRA_PERMISSIONS_VALIDITY_IN_MS:-2000}
      seeds_url: "${SEEDS_URL:-http://${SERVICE_NAME:-cassandra}.marathon.mesos:${API_PORT:-8080}/v1/seeds}"
      listen_address: "localhost"
      rpc_address: "localhost"
