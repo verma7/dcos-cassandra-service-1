@@ -124,13 +124,22 @@ public class CassandraDaemonTask extends CassandraTask {
         }
     }
 
-    private static CassandraConfig updateConfig(
-        final Protos.TaskState state,
-        final CassandraConfig config) {
-        if (Protos.TaskState.TASK_RUNNING.equals(state)) {
-            return config.mutable().setReplaceIp("").build();
+    private CassandraConfig updateConfig(
+            final Protos.TaskState state,
+            final CassandraMode oldTaskMode) {
+        /* Old Task Mode, is fetch from state store (zookeeper), and new task mode is set to STARTING
+           To replace a node, old task mode should not be NORMAL. And here first try will be with -D replace ip,
+           for next try it will remove replace ip.
+           Thereby, it will provide seamless replace experience in DN or a node is removed.
+         */
+        CassandraMode newTaskMode = getMode();
+        LOGGER.info("Old Task Mode {}, New Task Mode {}", oldTaskMode, newTaskMode);
+        if (CassandraMode.STARTING.equals(newTaskMode)
+                && Protos.TaskState.TASK_RUNNING.equals(state)
+                && !CassandraMode.NORMAL.equals(oldTaskMode)) {
+            return getConfig().mutable().setReplaceIp("").build();
         } else {
-            return config;
+            return getConfig();
         }
     }
 
@@ -216,7 +225,7 @@ public class CassandraDaemonTask extends CassandraTask {
                             .setData(getData().updateDaemon(
                                     daemonStatus.getState(),
                                     daemonStatus.getMode(),
-                                    updateConfig(daemonStatus.getState(), getConfig())
+                                    updateConfig(daemonStatus.getState(), daemonStatus.getMode())
                             ).getBytes()).build()
             );
         }
