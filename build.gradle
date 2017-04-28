@@ -33,7 +33,7 @@ allprojects {
     apply from: "$rootDir/gradle/spock.gradle"
 
     group = 'com.mesosphere.dcos'
-    version = '1.0.25-uber4' + (isSnapshot ? '-SNAPSHOT' : '')
+    version = '1.0.25-uber5' + (isSnapshot ? '-SNAPSHOT' : '')
 
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'

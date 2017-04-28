@@ -1798,6 +1798,8 @@ public class CassandraApplicationConfig {
     return ByteString.copyFrom(toByteArray());
   }
 
+  // numTokens and allocateTokensForKeyspace options are not included here to avoid rolling restart once changed,
+  // as they're only for bootstrap, have no effect on existing nodes.
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
