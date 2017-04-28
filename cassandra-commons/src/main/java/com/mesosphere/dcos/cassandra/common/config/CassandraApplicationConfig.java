@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.ByteString;
 import com.mesosphere.dcos.cassandra.common.util.JsonUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.mesos.config.SerializationUtils;
 
 import java.io.IOException;
@@ -44,6 +45,7 @@ public class CassandraApplicationConfig {
   public static final String DEFAULT_FILE_NAME = "cassandra.yaml";
   public static final String CLUSTER_NAME_KEY = "cluster_name";
   public static final String NUM_TOKENS_KEY = "num_tokens";
+  public static final String ALLOCATE_TOKENS_FOR_KEYSPACE_KEY = "allocate_tokens_for_keyspace";
   public static final String HINTED_HANDOFF_ENABLED_KEY = "hinted_handoff_enabled";
   public static final String MAX_HINT_WINDOW_IN_MS_KEY = "max_hint_window_in_ms";
   public static final String HINTED_HANDOFF_THROTTLE_IN_KB_KEY = "hinted_handoff_throttle_in_kb";
@@ -176,6 +178,7 @@ public class CassandraApplicationConfig {
 
   public static final String DEFAULT_CLUSTER_NAME = "Test Cluster";
   public static final int DEFAULT_NUM_TOKENS = 256;
+  public static final String DEFAULT_ALLOCATE_TOKENS_FOR_KEYSPACE = null;
   public static final boolean DEFAULT_HINTED_HANDOFF_ENABLED = true;
   public static final int DEFAULT_MAX_HINT_WINDOW_IN_MS = 10800000;
   public static final int DEFAULT_HINTED_HANDOFF_THROTTLE_IN_KB = 1024;
@@ -446,6 +449,7 @@ public class CassandraApplicationConfig {
   public static CassandraApplicationConfig create(
     @JsonProperty(CLUSTER_NAME_KEY) final String clusterName,
     @JsonProperty(NUM_TOKENS_KEY) final int numTokens,
+    @JsonProperty(ALLOCATE_TOKENS_FOR_KEYSPACE_KEY) final String allocateTokensForKeyspace,
     @JsonProperty(HINTED_HANDOFF_ENABLED_KEY) final boolean hintedHandoffEnabled,
     @JsonProperty(MAX_HINT_WINDOW_IN_MS_KEY) final int maxHintWindowInMs,
     @JsonProperty(HINTED_HANDOFF_THROTTLE_IN_KB_KEY) final int hintedHandoffThrottleInKb,
@@ -568,6 +572,7 @@ public class CassandraApplicationConfig {
 
     return new CassandraApplicationConfig(clusterName,
       numTokens,
+      allocateTokensForKeyspace,
       hintedHandoffEnabled,
       maxHintWindowInMs,
       hintedHandoffThrottleInKb,
@@ -693,6 +698,8 @@ public class CassandraApplicationConfig {
   private final String clusterName;
   @JsonProperty(NUM_TOKENS_KEY)
   private final int numTokens;
+  @JsonProperty(ALLOCATE_TOKENS_FOR_KEYSPACE_KEY)
+  private final String allocateTokensForKeyspace;
   @JsonProperty(HINTED_HANDOFF_ENABLED_KEY)
   private final boolean hintedHandoffEnabled;
   @JsonProperty(MAX_HINT_WINDOW_IN_MS_KEY)
@@ -930,6 +937,7 @@ public class CassandraApplicationConfig {
   public CassandraApplicationConfig(
     String clusterName,
     int numTokens,
+    String allocateTokensForKeyspace,
     boolean hintedHandoffEnabled,
     int maxHintWindowInMs,
     int hintedHandoffThrottleInKb,
@@ -1048,6 +1056,7 @@ public class CassandraApplicationConfig {
   ) {
     this.clusterName = clusterName;
     this.numTokens = numTokens;
+    this.allocateTokensForKeyspace = allocateTokensForKeyspace;
     this.hintedHandoffEnabled = hintedHandoffEnabled;
     this.maxHintWindowInMs = maxHintWindowInMs;
     this.hintedHandoffThrottleInKb = hintedHandoffThrottleInKb;
@@ -1625,6 +1634,9 @@ public class CassandraApplicationConfig {
 
     map.put(CLUSTER_NAME_KEY, clusterName);
     map.put(NUM_TOKENS_KEY, numTokens);
+    if (StringUtils.isNotEmpty(allocateTokensForKeyspace)) {
+      map.put(ALLOCATE_TOKENS_FOR_KEYSPACE_KEY, allocateTokensForKeyspace);
+    }
     map.put(HINTED_HANDOFF_ENABLED_KEY, hintedHandoffEnabled);
     map.put(MAX_HINT_WINDOW_IN_MS_KEY, maxHintWindowInMs);
     map.put(HINTED_HANDOFF_THROTTLE_IN_KB_KEY, hintedHandoffThrottleInKb);
@@ -1995,6 +2007,7 @@ public class CassandraApplicationConfig {
 
     private String clusterName;
     private int numTokens;
+    private String allocateTokensForKeyspace;
     private boolean hintedHandoffEnabled;
     private int maxHintWindowInMs;
     private int hintedHandoffThrottleInKb;
@@ -2116,6 +2129,7 @@ public class CassandraApplicationConfig {
 
       clusterName = DEFAULT_CLUSTER_NAME;
       numTokens = DEFAULT_NUM_TOKENS;
+      allocateTokensForKeyspace = DEFAULT_ALLOCATE_TOKENS_FOR_KEYSPACE;
       hintedHandoffEnabled = DEFAULT_HINTED_HANDOFF_ENABLED;
       maxHintWindowInMs = DEFAULT_MAX_HINT_WINDOW_IN_MS;
       hintedHandoffThrottleInKb = DEFAULT_HINTED_HANDOFF_THROTTLE_IN_KB;
@@ -2235,6 +2249,7 @@ public class CassandraApplicationConfig {
 
       this.clusterName = config.clusterName;
       this.numTokens = config.numTokens;
+      this.allocateTokensForKeyspace = config.allocateTokensForKeyspace;
       this.hintedHandoffEnabled = config.hintedHandoffEnabled;
       this.maxHintWindowInMs = config.maxHintWindowInMs;
       this.hintedHandoffThrottleInKb = config.hintedHandoffThrottleInKb;
@@ -2360,6 +2375,10 @@ public class CassandraApplicationConfig {
 
     public int getNumTokens() {
       return numTokens;
+    }
+
+    public String getAllocateTokensForKeyspace() {
+        return allocateTokensForKeyspace;
     }
 
     public boolean isHintedHandoffEnabled() {
@@ -2696,6 +2715,11 @@ public class CassandraApplicationConfig {
     public Builder setNumTokens(int numTokens) {
       this.numTokens = numTokens;
       return this;
+    }
+
+    public Builder setAllocateTokensForKeyspace(String allocateTokensForKeyspace) {
+        this.allocateTokensForKeyspace = allocateTokensForKeyspace;
+        return this;
     }
 
     public Builder setHintedHandoffEnabled(boolean hintedHandoffEnabled) {
@@ -3127,6 +3151,7 @@ public class CassandraApplicationConfig {
 
       return create(clusterName,
         numTokens,
+        allocateTokensForKeyspace,
         hintedHandoffEnabled,
         maxHintWindowInMs,
         hintedHandoffThrottleInKb,

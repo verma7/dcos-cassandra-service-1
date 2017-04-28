@@ -47,6 +47,7 @@ cassandra:
      enable_user_defined_functions: ${CASSANDRA_ENABLE_USER_DEFINED_FUNCTIONS:-false}
      endpoint_snitch : "GossipingPropertyFileSnitch"
      num_tokens : ${CASSANDRA_NUM_TOKENS:-256}
+     allocate_tokens_for_keyspace : ${CASSANDRA_ALLOCATE_TOKENS_FOR_KEYSPACE:-""}
      hinted_handoff_enabled : ${CASSANDRA_HINTED_HANDOFF_ENABLED:-true}
      max_hint_window_in_ms : ${CASSANDRA_MAX_HINT_WINDOW_IN_MS:-10800000}
      hinted_handoff_throttle_in_kb : ${CASSANDRA_HINTED_HANDOFF_THROTTLE_IN_KB:-1024}
