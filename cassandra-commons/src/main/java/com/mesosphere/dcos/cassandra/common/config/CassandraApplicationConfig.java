@@ -1892,7 +1892,7 @@ public class CassandraApplicationConfig {
       getMaxValueSizeInMb() == that.getMaxValueSizeInMb() &&
       getSeedsNumSeedsPerUnsPath() == that.getSeedsNumSeedsPerUnsPath() &&
       getRequestThrottlerFetchLimitsPeriodInSec() == that.getRequestThrottlerFetchLimitsPeriodInSec() &&
-      getRequestThrottlerReplenishLimitsPeriodInSec() == that.getRequestThrottlerFetchLimitsPeriodInSec() &&
+      getRequestThrottlerReplenishLimitsPeriodInSec() == that.getRequestThrottlerReplenishLimitsPeriodInSec() &&
       Objects.equals(getInternodeAuthenticator(), that.getInternodeAuthenticator()) &&
       Objects.equals(getDiskOptimizationStrategy(), that.getDiskOptimizationStrategy()) &&
       Objects.equals(getClusterName(), that.getClusterName()) &&
