@@ -225,6 +225,7 @@ public class CassandraDaemonProcess extends ProcessTask {
             // and clients do not receive timeout exceptions.
             LOGGER.info("Draining cassandra node before killing it");
             drain();
+            stopDaemon();
         } catch (InterruptedException | ExecutionException | IOException e) {
             e.printStackTrace();
         }
@@ -459,6 +460,10 @@ public class CassandraDaemonProcess extends ProcessTask {
     public void drain()
             throws InterruptedException, ExecutionException, IOException {
         getProbe().drain();
+    }
+
+    private void stopDaemon() {
+        getProbe().stopCassandraDaemon();
     }
 
     /**
