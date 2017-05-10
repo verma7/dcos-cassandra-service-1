@@ -1,5 +1,6 @@
 package com.mesosphere.dcos.cassandra.scheduler.plan.repair;
 
+import com.mesosphere.dcos.cassandra.common.metrics.StatsDMetrics;
 import com.mesosphere.dcos.cassandra.common.offer.ClusterTaskOfferRequirementProvider;
 import com.mesosphere.dcos.cassandra.common.tasks.CassandraDaemonTask;
 import com.mesosphere.dcos.cassandra.common.tasks.CassandraMode;
@@ -41,10 +42,13 @@ public class RepairStepTest {
     public void beforeEach() {
         MockitoAnnotations.initMocks(this);
         final StateStore mockStateStore = Mockito.mock(StateStore.class);
+        final StatsDMetrics metrics = Mockito.mock(StatsDMetrics.class);
         final Protos.TaskStatus status = TestUtils
                 .generateStatus(TaskUtils.toTaskId("node-0"), Protos.TaskState.TASK_RUNNING, CassandraMode.NORMAL);
         Mockito.when(mockStateStore.fetchStatus("node-0")).thenReturn(Optional.of(status));
         Mockito.when(cassandraState.getStateStore()).thenReturn(mockStateStore);
+        Mockito.doNothing().when(metrics).gauge("repair-node-0.MesosTaskCrashloop", 1);
+        Mockito.when(cassandraState.getMetrics()).thenReturn(metrics);
     }
 
     @Test

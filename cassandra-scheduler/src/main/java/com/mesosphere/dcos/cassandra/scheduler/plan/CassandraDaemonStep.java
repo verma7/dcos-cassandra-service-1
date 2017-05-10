@@ -23,6 +23,7 @@ public class CassandraDaemonStep extends DefaultStep {
     private final CassandraState cassandraState;
     private final PersistentOfferRequirementProvider provider;
     private volatile CassandraMode mode = CassandraMode.UNKNOWN;
+    private final String CassandraDaemonStepMetricName;
 
     public static boolean isComplete(Protos.TaskStatus status) {
         return isComplete(Optional.of(status));
@@ -104,6 +105,7 @@ public class CassandraDaemonStep extends DefaultStep {
         if (isComplete(cassandraState.getOrCreateContainer(name))) {
             setStatus(Status.COMPLETE);
         }
+        CassandraDaemonStepMetricName = "mesostaskcrashloop";
     }
 
     @Override
@@ -116,7 +118,7 @@ public class CassandraDaemonStep extends DefaultStep {
                 LOGGER.warn("Step {} is not pending. start() should not be called.", getName());
                 return Optional.empty();
             }
-
+            cassandraState.getMetrics().gauge(getName() + "." + CassandraDaemonStepMetricName, 1);
             if (isComplete(container)) {
                 LOGGER.info("Step {} - Task complete: id = {}",
                         getName(),

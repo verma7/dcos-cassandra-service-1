@@ -198,7 +198,6 @@ public class CassandraStateTest {
                 stateStore.fetchStatus(updatedDaemonTask.getName()).get().getState());
 
         cassandraState.update(getTestFailTaskStatus(daemonTask));
-        verify(metrics, times(1)).gauge("com.mesosphere.dcos.cassandra.common.tasks.CassandraState.test-daemon-name", 1);
         Assert.assertEquals(
                 Protos.TaskState.TASK_FAILED,
                 stateStore.fetchStatus(updatedDaemonTask.getName()).get().getState());

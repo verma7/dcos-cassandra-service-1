@@ -4,8 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.TextFormat;
 import com.mesosphere.dcos.cassandra.common.offer.CassandraOfferRequirementProvider;
 import com.mesosphere.dcos.cassandra.common.persistence.PersistenceException;
-import com.mesosphere.dcos.cassandra.common.tasks.CassandraTask;
 import com.mesosphere.dcos.cassandra.common.tasks.CassandraState;
+import com.mesosphere.dcos.cassandra.common.tasks.CassandraTask;
 import org.apache.mesos.Protos;
 import org.apache.mesos.offer.OfferRequirement;
 import org.apache.mesos.scheduler.plan.DefaultStep;
@@ -24,6 +24,7 @@ public abstract class AbstractClusterTaskStep extends DefaultStep {
     protected final String daemon;
     private final CassandraOfferRequirementProvider provider;
     protected final CassandraState cassandraState;
+    private final String ClusterTaskStepMetricName;
 
     public AbstractClusterTaskStep(
             final String daemon,
@@ -34,6 +35,7 @@ public abstract class AbstractClusterTaskStep extends DefaultStep {
         this.daemon = daemon;
         this.provider = provider;
         this.cassandraState = cassandraState;
+        ClusterTaskStepMetricName = "mesostaskcrashloop";
     }
 
     protected abstract Optional<CassandraTask> getOrCreateTask() throws PersistenceException;
@@ -63,6 +65,7 @@ public abstract class AbstractClusterTaskStep extends DefaultStep {
                     logger.info("No requirement because step is: ", getStatus());
                     return Optional.empty();
                 }
+                cassandraState.getMetrics().gauge(getName() + "." + ClusterTaskStepMetricName, 1);
                 if (Protos.TaskState.TASK_FINISHED.equals(task.getState())) {
                     // Task is already finished
                     logger.info("Task {} assigned to this step {}, is already in state: {}",

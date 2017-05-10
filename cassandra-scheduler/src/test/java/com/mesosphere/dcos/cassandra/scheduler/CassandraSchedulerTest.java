@@ -14,7 +14,6 @@ import com.mesosphere.dcos.cassandra.scheduler.plan.cleanup.CleanupManager;
 import com.mesosphere.dcos.cassandra.scheduler.plan.repair.RepairManager;
 import com.mesosphere.dcos.cassandra.scheduler.plan.upgradesstable.UpgradeSSTableManager;
 import com.mesosphere.dcos.cassandra.scheduler.seeds.SeedsManager;
-import com.mesosphere.dcos.cassandra.common.tasks.CassandraState;
 import io.dropwizard.configuration.ConfigurationFactory;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.FileConfigurationSourceProvider;
@@ -47,7 +46,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class CassandraSchedulerTest {
     @Mock private CompletionStage<Boolean> mockStage;
@@ -116,6 +115,7 @@ public class CassandraSchedulerTest {
                         new EnvironmentVariableSubstitutor(false, true)),
                 Resources.getResource(configName).getFile());
 
+
         CuratorFrameworkConfig curatorConfig = config.getCuratorConfig();
         curatorConfig.setServers(server.getConnectString());
 
@@ -132,8 +132,8 @@ public class CassandraSchedulerTest {
                 stateStore);
 
         metricConfig = config.getMetricConfig();
-        metrics = new StatsDMetrics(metricConfig);
 
+        metrics = mock(StatsDMetrics.class);
 
         Capabilities mockCapabilities = Mockito.mock(Capabilities.class);
         when(mockCapabilities.supportsNamedVips()).thenReturn(true);
@@ -212,6 +212,7 @@ public class CassandraSchedulerTest {
                 1, offerOps.size());
         Collection<Protos.Offer.Operation> ops = offerOps.iterator().next().getOperations();
         launchAll(ops, scheduler, driver);
+        verify(metrics).gauge("node-0.mesostaskcrashloop", 1);
 
         assertEquals("node-1", getNextStep().getName());
 
@@ -229,6 +230,7 @@ public class CassandraSchedulerTest {
                 1, offerOps.size());
         ops = offerOps.iterator().next().getOperations();
         launchAll(ops, scheduler, driver);
+        verify(metrics).gauge("node-1.mesostaskcrashloop", 1);
 
         assertEquals("node-2", getNextStep().getName());
 
@@ -246,6 +248,7 @@ public class CassandraSchedulerTest {
                 1, offerOps.size());
         ops = offerOps.iterator().next().getOperations();
         launchAll(ops, scheduler, driver);
+        verify(metrics).gauge("node-2.mesostaskcrashloop", 1);
 
         assertTrue(getIncompleteSteps().isEmpty());
     }
@@ -282,6 +285,7 @@ public class CassandraSchedulerTest {
             }
         }).findFirst();
 
+        verify(metrics, times(2)).gauge("node-0.mesostaskcrashloop", 1);
         assertEquals(Protos.TaskState.TASK_RUNNING, node0Status.get().getState());
     }
 
