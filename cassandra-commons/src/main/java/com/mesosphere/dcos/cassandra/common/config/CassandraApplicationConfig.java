@@ -71,6 +71,7 @@ public class CassandraApplicationConfig {
   public static final String SAVED_CACHES_DIRECTORY_KEY = "saved_caches_directory";
   public static final String COMMITLOG_SYNC_KEY = "commitlog_sync";
   public static final String COMMITLOG_SYNC_PERIOD_IN_MS_KEY = "commitlog_sync_period_in_ms";
+  public static final String COMMITLOG_SYNC_BATCH_WINDOW_IN_MS_KEY = "commitlog_sync_batch_window_in_ms";
   public static final String COMMITLOG_SEGMENT_SIZE_IN_MB_KEY = "commitlog_segment_size_in_mb";
   public static final String SEED_PROVIDER_KEY = "seed_provider";
   public static final String CONCURRENT_READS_KEY = "concurrent_reads";
@@ -200,6 +201,7 @@ public class CassandraApplicationConfig {
   public static final int DEFAULT_COUNTER_CACHE_SAVE_PERIOD = 7200;
   public static final String DEFAULT_COMMITLOG_SYNC = "periodic";
   public static final int DEFAULT_COMMITLOG_SYNC_PERIOD_IN_MS = 10000;
+  public static final int DEFAULT_COMMITLOG_SYNC_BATCH_WINDOW_IN_MS = 2;
   public static final int DEFAULT_COMMITLOG_SEGMENT_SIZE_IN_MB = 32;
   public static final List<Map<String, Object>> DEFAULT_SEED_PROVIDER =
     ImmutableList.<Map<String, Object>>of(
@@ -473,6 +475,7 @@ public class CassandraApplicationConfig {
     @JsonProperty(COUNTER_CACHE_SAVE_PERIOD_KEY) final int counterCacheSavePeriod,
     @JsonProperty(COMMITLOG_SYNC_KEY) final String commitlogSync,
     @JsonProperty(COMMITLOG_SYNC_PERIOD_IN_MS_KEY) final int commitlogSyncPeriodInMs,
+    @JsonProperty(COMMITLOG_SYNC_BATCH_WINDOW_IN_MS_KEY) final int commitlogSyncBatchWindowInMs,
     @JsonProperty(COMMITLOG_SEGMENT_SIZE_IN_MB_KEY) final int commitlogSegmentSizeInMb,
     @JsonProperty(SEEDS_URL_KEY) final String seedsUrl,
     @JsonProperty(OTC_COALESCING_STRATEGY) final String otcCoalescingStrategy,
@@ -594,6 +597,7 @@ public class CassandraApplicationConfig {
       counterCacheSavePeriod,
       commitlogSync,
       commitlogSyncPeriodInMs,
+      commitlogSyncBatchWindowInMs,
       commitlogSegmentSizeInMb,
       seedsUrl,
       otcCoalescingStrategy,
@@ -742,6 +746,8 @@ public class CassandraApplicationConfig {
   private final String commitlogSync;
   @JsonProperty(COMMITLOG_SYNC_PERIOD_IN_MS_KEY)
   private final int commitlogSyncPeriodInMs;
+  @JsonProperty(COMMITLOG_SYNC_BATCH_WINDOW_IN_MS_KEY)
+  private final int commitlogSyncBatchWindowInMs;
   @JsonProperty(COMMITLOG_SEGMENT_SIZE_IN_MB_KEY)
   private final int commitlogSegmentSizeInMb;
   @JsonProperty(SEEDS_URL_KEY)
@@ -959,6 +965,7 @@ public class CassandraApplicationConfig {
     int counterCacheSavePeriod,
     String commitlogSync,
     int commitlogSyncPeriodInMs,
+    int commitlogSyncBatchWindowInMs,
     int commitlogSegmentSizeInMb,
     String seedsUrl,
     String otcCoalescingStrategy,
@@ -1078,6 +1085,7 @@ public class CassandraApplicationConfig {
     this.counterCacheSavePeriod = counterCacheSavePeriod;
     this.commitlogSync = commitlogSync;
     this.commitlogSyncPeriodInMs = commitlogSyncPeriodInMs;
+    this.commitlogSyncBatchWindowInMs = commitlogSyncBatchWindowInMs;
     this.commitlogSegmentSizeInMb = commitlogSegmentSizeInMb;
     this.seedsUrl = seedsUrl;
     this.otcCoalescingStrategy = otcCoalescingStrategy;
@@ -1307,6 +1315,10 @@ public class CassandraApplicationConfig {
 
   public int getCommitlogSyncPeriodInMs() {
     return commitlogSyncPeriodInMs;
+  }
+
+  public int getCommitlogSyncBatchWindowInMs() {
+    return commitlogSyncBatchWindowInMs;
   }
 
   public int getCommitlogSegmentSizeInMb() {
@@ -1666,7 +1678,11 @@ public class CassandraApplicationConfig {
     map.put(COUNTER_CACHE_SIZE_IN_MB_KEY, counterCacheSizeInMb);
     map.put(COUNTER_CACHE_SAVE_PERIOD_KEY, counterCacheSavePeriod);
     map.put(COMMITLOG_SYNC_KEY, commitlogSync);
-    map.put(COMMITLOG_SYNC_PERIOD_IN_MS_KEY, commitlogSyncPeriodInMs);
+    if (commitlogSync.equals("periodic")) {
+      map.put(COMMITLOG_SYNC_PERIOD_IN_MS_KEY, commitlogSyncPeriodInMs);
+    } else {
+      map.put(COMMITLOG_SYNC_BATCH_WINDOW_IN_MS_KEY, commitlogSyncBatchWindowInMs);
+    }
     map.put(COMMITLOG_SEGMENT_SIZE_IN_MB_KEY, commitlogSegmentSizeInMb);
     map.put(SEED_PROVIDER_KEY, createSeedProvider(seedProviderType));
     map.put(OTC_COALESCING_STRATEGY, otcCoalescingStrategy);
@@ -1817,6 +1833,7 @@ public class CassandraApplicationConfig {
       getRowCacheSavePeriod() == that.getRowCacheSavePeriod() &&
       getCounterCacheSavePeriod() == that.getCounterCacheSavePeriod() &&
       getCommitlogSyncPeriodInMs() == that.getCommitlogSyncPeriodInMs() &&
+      getCommitlogSyncBatchWindowInMs() == that.getCommitlogSyncBatchWindowInMs() &&
       getCommitlogSegmentSizeInMb() == that.getCommitlogSegmentSizeInMb() &&
       getConcurrentReads() == that.getConcurrentReads() &&
       getConcurrentWrites() == that.getConcurrentWrites() &&
@@ -1952,6 +1969,7 @@ public class CassandraApplicationConfig {
       getRowCacheSizeInMb(), getRowCacheSavePeriod(),
       getCounterCacheSizeInMb(), getCounterCacheSavePeriod(),
       getCommitlogSync(), getCommitlogSyncPeriodInMs(),
+      getCommitlogSyncBatchWindowInMs(),
       getCommitlogSegmentSizeInMb(), getConcurrentReads(),
       getConcurrentWrites(), getConcurrentCounterWrites(),
       getMemtableAllocationType(), getIndexSummaryCapacityInMb(),
@@ -2031,6 +2049,7 @@ public class CassandraApplicationConfig {
     private int counterCacheSavePeriod;
     private String commitlogSync;
     private int commitlogSyncPeriodInMs;
+    private int commitlogSyncBatchWindowInMs;
     private int commitlogSegmentSizeInMb;
     private String seedsUrl;
     private String otcCoalescingStrategy;
@@ -2153,6 +2172,7 @@ public class CassandraApplicationConfig {
       counterCacheSavePeriod = DEFAULT_COUNTER_CACHE_SAVE_PERIOD;
       commitlogSync = DEFAULT_COMMITLOG_SYNC;
       commitlogSyncPeriodInMs = DEFAULT_COMMITLOG_SYNC_PERIOD_IN_MS;
+      commitlogSyncBatchWindowInMs = DEFAULT_COMMITLOG_SYNC_BATCH_WINDOW_IN_MS;
       commitlogSegmentSizeInMb = DEFAULT_COMMITLOG_SEGMENT_SIZE_IN_MB;
       concurrentReads = DEFAULT_CONCURRENT_READS;
       concurrentWrites = DEFAULT_CONCURRENT_WRITES;
@@ -2273,6 +2293,7 @@ public class CassandraApplicationConfig {
       this.counterCacheSavePeriod = config.counterCacheSavePeriod;
       this.commitlogSync = config.commitlogSync;
       this.commitlogSyncPeriodInMs = config.commitlogSyncPeriodInMs;
+      this.commitlogSyncBatchWindowInMs = config.commitlogSyncBatchWindowInMs;
       this.commitlogSegmentSizeInMb = config.commitlogSegmentSizeInMb;
       this.seedsUrl = config.seedsUrl;
       this.otcCoalescingStrategy = config.otcCoalescingStrategy;
@@ -2465,6 +2486,10 @@ public class CassandraApplicationConfig {
 
     public int getCommitlogSyncPeriodInMs() {
       return commitlogSyncPeriodInMs;
+    }
+
+    public int getCommitlogSyncBatchWindowInMs() {
+      return commitlogSyncBatchWindowInMs;
     }
 
     public int getCommitlogSegmentSizeInMb() {
@@ -2829,6 +2854,11 @@ public class CassandraApplicationConfig {
       return this;
     }
 
+    public Builder setCommitlogSyncBatchWindowInMs(int commitlogSyncBatchWindowInMs) {
+      this.commitlogSyncBatchWindowInMs = commitlogSyncBatchWindowInMs;
+      return this;
+    }
+
     public Builder setCommitlogSegmentSizeInMb(int commitlogSegmentSizeInMb) {
       this.commitlogSegmentSizeInMb = commitlogSegmentSizeInMb;
       return this;
@@ -3175,6 +3205,7 @@ public class CassandraApplicationConfig {
         counterCacheSavePeriod,
         commitlogSync,
         commitlogSyncPeriodInMs,
+        commitlogSyncBatchWindowInMs,
         commitlogSegmentSizeInMb,
         seedsUrl,
         otcCoalescingStrategy,
