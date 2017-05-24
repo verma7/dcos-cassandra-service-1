@@ -162,6 +162,7 @@ service:
   secret: ${SERVICE_SECRET_FILE:-""}
   failover_timeout_s : ${SERVICE_FAILOVER_TIMEOUT_S:-604800}
   checkpoint : ${SERVICE_CHECKPOINT:-true}
+  registration_timeout_s : ${SERVICE_REGISTRATION_TIMEOUT_S:-60}
 mesos:
   servers: ${MESOS_SERVERS:-"localhost:40000"}
   path: ${MESOS_PATH:-"/mesos"}

@@ -103,6 +103,8 @@ public class CassandraScheduler implements Scheduler, Observer {
     // of zookeeper and it does not have any state about all the tasks.
     private boolean enableCleaner;
 
+    private long registrationTimeoutS;
+
     @Inject
     public CassandraScheduler (
             final ConfigurationManager configurationManager,
@@ -146,6 +148,7 @@ public class CassandraScheduler implements Scheduler, Observer {
         this.defaultConfigurationManager = defaultConfigurationManager;
         this.capabilities = capabilities;
         this.enableCleaner = false;
+        this.registrationTimeoutS = 60;
         this.metrics = metrics;
         schedulerMetricsName = "registers";
 
@@ -382,6 +385,7 @@ public class CassandraScheduler implements Scheduler, Observer {
                 (CassandraSchedulerConfiguration) defaultConfigurationManager.getTargetConfig();
         final ServiceConfig serviceConfig = targetConfig.getServiceConfig();
         enableCleaner = serviceConfig.getEnableCleaner();
+        registrationTimeoutS = serviceConfig.getRegistrationTimeoutS();
         final Optional<ByteString> secretBytes = serviceConfig.readSecretBytes();
         final Protos.FrameworkInfo.Builder builder = Protos.FrameworkInfo.newBuilder()
                 .setRole(serviceConfig.getRole())
@@ -468,8 +472,9 @@ public class CassandraScheduler implements Scheduler, Observer {
     Collection<Object> getResources() throws InterruptedException {
         if (resources == null) {
             // wait for scheduler thread to register and create resources
-            LOGGER.info("Waiting for registration to finish and resources to become available...");
-            resources = resourcesQueue.poll(60, TimeUnit.SECONDS);
+            LOGGER.info("Waiting for registration to finish and resources to become available for {} seconds...",
+                    registrationTimeoutS);
+            resources = resourcesQueue.poll(registrationTimeoutS, TimeUnit.SECONDS);
             if (resources == null) {
                 throw new RuntimeException("Timed out waiting for resources from scheduler");
             }

@@ -59,13 +59,15 @@ public class ConfigValidatorTest {
       serviceConfig.getFailoverTimeoutS(),
       serviceConfig.getSecret(),
       serviceConfig.isCheckpoint(),
-      serviceConfig.getEnableCleaner());
+      serviceConfig.getEnableCleaner(),
+      serviceConfig.getRegistrationTimeoutS());
     mutable.setServiceConfig(updated);
     final ConfigValidator configValidator = new ConfigValidator();
     final List<ConfigValidationError> validate = configValidator.validate(
       configuration.createConfig(),
       mutable.createConfig());
     Assert.assertTrue(validate.size() == 1);
+    Assert.assertEquals(60, updated.getRegistrationTimeoutS());
   }
 
   @Test
@@ -86,7 +88,8 @@ public class ConfigValidatorTest {
       serviceConfig.getFailoverTimeoutS(),
       serviceConfig.getSecret(),
       serviceConfig.isCheckpoint(),
-      serviceConfig.getEnableCleaner());
+      serviceConfig.getEnableCleaner(),
+      serviceConfig.getRegistrationTimeoutS());
     mutable.setServiceConfig(updated);
     final ConfigValidator configValidator = new ConfigValidator();
     final List<ConfigValidationError> validate = configValidator.validate(configuration.createConfig(), mutable.createConfig());
@@ -111,7 +114,8 @@ public class ConfigValidatorTest {
       serviceConfig.getFailoverTimeoutS(),
       serviceConfig.getSecret(),
       serviceConfig.isCheckpoint(),
-      serviceConfig.getEnableCleaner());
+      serviceConfig.getEnableCleaner(),
+      serviceConfig.getRegistrationTimeoutS());
     mutable.setServiceConfig(updated);
     final ConfigValidator configValidator = new ConfigValidator();
     final List<ConfigValidationError> validate =
@@ -138,7 +142,8 @@ public class ConfigValidatorTest {
       serviceConfig.getFailoverTimeoutS(),
       serviceConfig.getSecret(),
       serviceConfig.isCheckpoint(),
-      serviceConfig.getEnableCleaner());
+      serviceConfig.getEnableCleaner(),
+      serviceConfig.getRegistrationTimeoutS());
     mutable.setServiceConfig(updated);
     final ConfigValidator configValidator = new ConfigValidator();
     final List<ConfigValidationError> validate = configValidator.validate(configuration.createConfig(),mutable.createConfig());

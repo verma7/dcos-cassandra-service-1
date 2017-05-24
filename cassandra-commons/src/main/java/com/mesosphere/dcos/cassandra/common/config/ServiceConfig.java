@@ -30,7 +30,8 @@ public class ServiceConfig {
     @JsonProperty("failover_timeout_s") final Long failoverTimeoutS,
     @JsonProperty("secret") final String secret,
     @JsonProperty("checkpoint") final boolean checkpoint,
-    @JsonProperty("enable_cleaner") final boolean enableCleaner) {
+    @JsonProperty("enable_cleaner") final boolean enableCleaner,
+    @JsonProperty("registration_timeout_s") final Long registrationTimeoutS) {
 
     return create(
       name,
@@ -43,8 +44,8 @@ public class ServiceConfig {
       Duration.ofSeconds(failoverTimeoutS),
       secret,
       checkpoint,
-      enableCleaner);
-
+      enableCleaner,
+      Duration.ofSeconds(registrationTimeoutS == null ? 60 : registrationTimeoutS));
   }
 
   public static final ServiceConfig create(
@@ -58,7 +59,8 @@ public class ServiceConfig {
     final Duration failoverTimeout,
     final String secret,
     final boolean checkpoint,
-    final boolean enableCleaner) {
+    final boolean enableCleaner,
+    final Duration registrationTimeout) {
     return new ServiceConfig(
       name,
       id,
@@ -70,8 +72,8 @@ public class ServiceConfig {
       failoverTimeout,
       secret,
       checkpoint,
-      enableCleaner);
-
+      enableCleaner,
+      registrationTimeout);
   }
 
   @JsonProperty("name")
@@ -96,6 +98,8 @@ public class ServiceConfig {
   private final boolean checkpoint;
   @JsonProperty("enable_cleaner")
   private final boolean enableCleaner;
+  @JsonIgnore
+  private final Duration registrationTimeout;
 
   public ServiceConfig(String name,
                        String id,
@@ -107,7 +111,8 @@ public class ServiceConfig {
                        Duration failoverTimeout,
                        String secret,
                        boolean checkpoint,
-                       boolean enableCleaner) {
+                       boolean enableCleaner,
+                       Duration registrationTimeout) {
     this.name = name;
     this.id = (id != null) ? id : "";
     this.version = version;
@@ -119,6 +124,7 @@ public class ServiceConfig {
     this.secret = secret;
     this.checkpoint = checkpoint;
     this.enableCleaner = enableCleaner;
+    this.registrationTimeout = registrationTimeout;
   }
 
 
@@ -169,6 +175,11 @@ public class ServiceConfig {
 
   public boolean getEnableCleaner() { return enableCleaner; }
 
+  public Duration getRegistrationTimeout() { return registrationTimeout; }
+
+  @JsonProperty("registration_timeout_s")
+  public long getRegistrationTimeoutS() { return registrationTimeout.getSeconds(); }
+
   public ServiceConfig register(final String id) {
     return create(
       name,
@@ -181,7 +192,8 @@ public class ServiceConfig {
       failoverTimeout,
       secret,
       checkpoint,
-      enableCleaner);
+      enableCleaner,
+      registrationTimeout);
   }
 
   public Protos.FrameworkInfo asInfo() {
@@ -214,7 +226,8 @@ public class ServiceConfig {
       Objects.equals(role, that.role) &&
       Objects.equals(principal, that.principal) &&
       Objects.equals(failoverTimeout, that.failoverTimeout) &&
-      Objects.equals(secret, that.secret);
+      Objects.equals(secret, that.secret) &&
+      Objects.equals(registrationTimeout, that.registrationTimeout);
   }
 
   @Override
@@ -229,7 +242,8 @@ public class ServiceConfig {
       failoverTimeout,
       secret,
       checkpoint,
-      enableCleaner);
+      enableCleaner,
+      registrationTimeout);
   }
 
   @Override
