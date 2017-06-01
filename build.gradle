@@ -33,7 +33,7 @@ allprojects {
     apply from: "$rootDir/gradle/spock.gradle"
 
     group = 'com.mesosphere.dcos'
-    version = '1.0.25-uber8' + (isSnapshot ? '-SNAPSHOT' : '')
+    version = '1.0.25-uber9' + (isSnapshot ? '-SNAPSHOT' : '')
 
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'
@@ -113,7 +113,7 @@ configure(project(':seedprovider')) {
     }
 
     dependencies {
-        compile 'org.apache.cassandra:cassandra-all:3.0.11'
+        compile 'org.apache.cassandra:cassandra-all:3.0.13.3'
 
     }
 }
