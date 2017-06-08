@@ -29,6 +29,7 @@ cassandra:
     rack : ${CASSANDRA_LOCATION_RACK:-"rac1"}
     data_center : ${CASSANDRA_LOCATION_DATA_CENTER:-"dc1"}
   jmx_port: ${CASSANDRA_JMX_PORT:-7199}
+  mx4j_port: ${CASSANDRA_MX4J_PORT:-8081}
   publish_discovery_info: ${CASSANDRA_PUBLISH_DISCOVERY_INFO:-false}
   rolling_restart_name: ${CASSANDRA_ROLLING_RESTART_NAME:-"00000000-0000-0000-0000-000000000000"}
   application:

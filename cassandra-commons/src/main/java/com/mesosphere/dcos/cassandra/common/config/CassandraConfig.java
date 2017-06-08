@@ -45,6 +45,7 @@ public class CassandraConfig {
                     HeapConfig.DEFAULT,
                     Location.DEFAULT,
                     7199,
+                    8081,
                     false,
                     UUID.randomUUID().toString(),
                     CassandraApplicationConfig.builder().build());
@@ -65,6 +66,7 @@ public class CassandraConfig {
         private HeapConfig heap;
         private Location location;
         private int jmxPort;
+        private int mx4jPort;
         private boolean publishDiscoveryInfo;
         private String rollingRestartName;
         private CassandraApplicationConfig application;
@@ -215,6 +217,24 @@ public class CassandraConfig {
         }
 
         /**
+         * Gets the mx4j port for the node.
+         * @return The mx4j port for the node.
+         */
+        public int getMx4jPort() {
+            return mx4jPort;
+        }
+
+        /**
+         * Sets the mx4j port for the node
+         * @param mx4jPort The mx4j port for the node
+         * @return The Builder instance.
+         */
+        public Builder setMx4jPort(int mx4jPort) {
+            this.mx4jPort = mx4jPort;
+            return this;
+        }
+
+        /**
          * Gets the Location configuration for the node.
          * @return The Location configuration for the node.
          */
@@ -340,6 +360,7 @@ public class CassandraConfig {
                     heap,
                     location,
                     jmxPort,
+                    mx4jPort,
                     publishDiscoveryInfo,
                     rollingRestartName,
                     application);
@@ -385,6 +406,7 @@ public class CassandraConfig {
             @JsonProperty("heap") HeapConfig heap,
             @JsonProperty("location") Location location,
             @JsonProperty("jmx_port") int jmxPort,
+            @JsonProperty("mx4j_port") int mx4jPort,
             @JsonProperty("publish_discovery_info") boolean publishDiscoveryInfo,
             @JsonProperty("rolling_restart_name") String rollingRestartName,
             @JsonProperty("application")
@@ -400,6 +422,7 @@ public class CassandraConfig {
                 heap,
                 location,
                 jmxPort,
+                mx4jPort,
                 publishDiscoveryInfo,
                 rollingRestartName,
                 application);
@@ -425,6 +448,7 @@ public class CassandraConfig {
                 HeapConfig.parse(config.getHeap()),
                 Location.parse(config.getLocation()),
                 config.getJmxPort(),
+                config.getMx4JPort(),
                 config.getPublishDiscoveryInfo(),
                 config.getRollingRestartName(),
                 CassandraApplicationConfig.parse(config.getApplication()));
@@ -471,6 +495,9 @@ public class CassandraConfig {
     @JsonProperty("jmx_port")
     private final int jmxPort;
 
+    @JsonProperty("mx4j_port")
+    private final int mx4jPort;
+
     @JsonProperty("publish_discovery_info")
     private final boolean publishDiscoveryInfo;
 
@@ -494,6 +521,7 @@ public class CassandraConfig {
      * @param location The location (Rack and Data center) configuration for
      *                 the node.
      * @param jmxPort The JMX port the node will listen on.
+     * @param mx4jPort The mx4j port the node will listen on.
      * @param application The Cassandra application configuration for the
      *                    node (This corresponds to the cassandra.yaml).
      */
@@ -506,6 +534,7 @@ public class CassandraConfig {
                            final HeapConfig heap,
                            final Location location,
                            final int jmxPort,
+                           final int mx4jPort,
                            final boolean publishDiscoveryInfo,
                            final String rollingRestartName,
                            final CassandraApplicationConfig application) {
@@ -518,6 +547,7 @@ public class CassandraConfig {
         this.heap = heap;
         this.location = location;
         this.jmxPort = jmxPort;
+        this.mx4jPort = mx4jPort;
         this.publishDiscoveryInfo = publishDiscoveryInfo;
         this.rollingRestartName = (rollingRestartName != null) ? rollingRestartName : "";
         this.application = application;
@@ -563,6 +593,14 @@ public class CassandraConfig {
      */
     public int getJmxPort() {
         return jmxPort;
+    }
+
+    /**
+     * Gets the mx4j port for the node.
+     * @return The mx4j port the node will listen on.
+     */
+    public int getMx4jPort() {
+        return mx4jPort;
     }
 
     /**
@@ -632,6 +670,7 @@ public class CassandraConfig {
                 CassandraProtos.CassandraConfig
                         .newBuilder()
                         .setJmxPort(jmxPort)
+                        .setMx4JPort(mx4jPort)
                         .setVersion(version)
                         .setCpus(cpus)
                         .setDiskMb(diskMb)

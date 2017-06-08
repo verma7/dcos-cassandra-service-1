@@ -52,6 +52,8 @@ message CassandraConfig{
     optional bool publishDiscoveryInfo = 12;
 
     optional string rollingRestartName = 13;
+
+    optional int32 mx4jPort = 14;
 }
 
 message CassandraData{

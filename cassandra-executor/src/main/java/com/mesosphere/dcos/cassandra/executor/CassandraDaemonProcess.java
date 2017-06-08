@@ -255,6 +255,9 @@ public class CassandraDaemonProcess extends ProcessTask {
         builder.environment().put(
                 "JMX_PORT",
                 Integer.toString(cassandraDaemonTask.getConfig().getJmxPort()));
+        builder.environment().put(
+                "MX4J_PORT",
+                Integer.toString(cassandraDaemonTask.getConfig().getMx4jPort()));
         if (metricsEnabled) {
             MetricsConfig.setEnv(builder.environment());
         }

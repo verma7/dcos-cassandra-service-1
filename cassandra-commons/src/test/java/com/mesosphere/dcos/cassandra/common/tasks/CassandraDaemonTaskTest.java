@@ -106,6 +106,7 @@ public class CassandraDaemonTaskTest {
                 HeapConfig.DEFAULT,
                 Location.DEFAULT,
                 7199,
+                8081,
                 false,
                 UUID.randomUUID().toString(),
                 CassandraApplicationConfig.builder().build());
@@ -138,6 +139,7 @@ public class CassandraDaemonTaskTest {
                 HeapConfig.DEFAULT,
                 Location.DEFAULT,
                 7199,
+                8081,
                 false,
                 UUID.randomUUID().toString(),
                 CassandraApplicationConfig.builder().build());
@@ -171,6 +173,7 @@ public class CassandraDaemonTaskTest {
                 HeapConfig.DEFAULT,
                 Location.DEFAULT,
                 7199,
+                8081,
                 false,
                 UUID.randomUUID().toString(),
                 CassandraApplicationConfig.builder().build());
