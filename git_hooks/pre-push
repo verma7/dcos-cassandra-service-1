@@ -1,0 +1,47 @@
+#!/bin/sh
+
+# An example hook script to verify what is about to be pushed.  Called by "git
+# push" after it has checked the remote status, but before anything has been
+# pushed.  If this script exits with a non-zero status nothing will be pushed.
+#
+# This hook is called with the following parameters:
+#
+# $1 -- Name of the remote to which the push is being done
+# $2 -- URL to which the push is being done
+#
+# If pushing without using a named remote those arguments will be equal.
+#
+# Information about the commits which are being pushed is supplied as lines to
+# the standard input in the form:
+#
+#   <local ref> <local sha1> <remote ref> <remote sha1>
+
+remote="$1"
+url="$2"
+
+while read local_ref local_sha remote_ref remote_sha
+do
+  # We only care if somebody is pushing to the master branch
+  if [[ $remote_ref == "refs/heads/master" ]]; then
+    echo "=== Executing custom pre-push hook for master branch for <dcos-cassandra-service> repository ==="
+
+    # Check if a diff exists for this commit.
+    DIFF=`git show -s $local_sha | grep https://code.uberinternal.com/D`
+    if [[ -z "$DIFF" ]]; then
+      echo "Git commit does not have a diff, please execute \`arc diff\` to create one."
+      echo "=== Not pushing to master branch ==="
+      exit 1
+    fi
+
+    # Check if this commit has been reviewed by somebody.
+    REVIEWERS=`git show -s $local_sha | grep "Reviewed By"`
+    if [[ -z "$REVIEWERS" ]]; then
+      echo "Git commit has not been approved by anyone, please add reviewers to your diff and ask for their approval."
+      echo "=== Not pushing to master branch ==="
+      exit 1
+    fi
+  fi
+done
+
+echo "=== All custom pre-push checks have passed ==="
+exit 0

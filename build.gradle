@@ -40,6 +40,12 @@ allprojects {
     [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 }
 
+// This copies the latest git hooks into the .git directory
+task copyGitHooks(type: Copy) {
+    from "git_hooks/"
+    into ".git/hooks/"
+}
+
 configure(subprojects - project('seedprovider')) {
 
     repositories {
@@ -103,6 +109,7 @@ configure(subprojects - project('seedprovider')) {
         into sourceSets.test.output.classesDir
     }
     processTestResources.dependsOn copyTestResources
+    build.dependsOn(copyGitHooks)
 }
 
 configure(project(':seedprovider')) {
