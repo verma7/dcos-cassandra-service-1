@@ -192,6 +192,16 @@ public class TaskUtils {
             .collect(Collectors.toList());
     }
 
+    public static List<String> getPersistentVolumeId(final List<Resource> resources) {
+        return resources.stream().filter(resource ->
+                isDisk(resource) &&
+                        resource.hasDisk() &&
+                        resource.getDisk().hasPersistence()).map(
+                resource -> resource.getDisk()
+                        .getPersistence().getId())
+                .collect(Collectors.toList());
+    }
+
     public static TaskInfo copyVolumes(
         final TaskInfo source,
         final TaskInfo target) {

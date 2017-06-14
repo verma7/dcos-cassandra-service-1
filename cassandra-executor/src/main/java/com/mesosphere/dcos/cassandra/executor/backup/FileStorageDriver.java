@@ -19,7 +19,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupRestoreContext;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +33,11 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.nio.file.Path;
 
 /**
  * Implements a BackupStorageDriver that provides upload and download
@@ -40,6 +45,7 @@ import java.util.stream.Collectors;
  */
 public class FileStorageDriver implements BackupStorageDriver {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileStorageDriver.class);
+    private static final String HOST_VOLUME_PATH_PREFIX = "/var/lib/mesos/volumes/roles";
 
     @VisibleForTesting
     String getLocalBackupPath(final BackupRestoreContext ctx) throws URISyntaxException {
@@ -76,6 +82,22 @@ public class FileStorageDriver implements BackupStorageDriver {
         dir.delete();
     }
 
+    private String getHostVolumePath(final File dir, final String volumeId) throws IOException {
+        final File[] files = dir.listFiles();
+        for (File file : files) {
+            if (file.isDirectory() && file.getName().equals(volumeId)) {
+                return file.getAbsolutePath();
+            } else if (file.isDirectory()) {
+                final String path = getHostVolumePath(file, volumeId);
+                if (!path.isEmpty()) {
+                    //found persistent volume path
+                    return path;
+                }
+            }
+        }
+        return "";
+    }
+
     private long getDirSize(final File dir) throws IOException {
         long size = 0;
         final File[] files = dir.listFiles();
@@ -90,13 +112,27 @@ public class FileStorageDriver implements BackupStorageDriver {
 
     @Override
     public void upload(BackupRestoreContext ctx) throws Exception {
-        final String localLocation = ctx.getLocalLocation();
         final String backupName = ctx.getName();
         final String localBackupPath = getLocalBackupPath(ctx);
         LOGGER.info("Local backup path: " + localBackupPath);
+        LOGGER.info("Persistent volume id: " + ctx.getPersistentVolumeId());
+
+        final File volumePathPrefix = new File(HOST_VOLUME_PATH_PREFIX);
+        String hostVolumeFullPath = getHostVolumePath(volumePathPrefix, ctx.getPersistentVolumeId());
+        if (hostVolumeFullPath.isEmpty()) {
+            final String errorMessage = "Invalid host volume path for backup: " + backupName
+                    + ", volume id: " + ctx.getPersistentVolumeId();
+            LOGGER.error(errorMessage);
+            throw new Exception(errorMessage);
+        }
+
+        hostVolumeFullPath += File.separator;
+        hostVolumeFullPath += "data";
 
         try {
-            final File dataDirectory = new File(localLocation);
+            LOGGER.info("HostVolumeFullPath: " + hostVolumeFullPath);
+
+            final File dataDirectory = new File(hostVolumeFullPath);
             final File localBackupDir = new File(localBackupPath);
 
             if (ctx.getMinFreeSpacePercent() > 0.0) {
@@ -200,18 +236,25 @@ public class FileStorageDriver implements BackupStorageDriver {
     private void uploadDirectory(final String backupName, final String localBackupPath, final String keyspaceName,
             final String cfName, final File snapshotDirectory) throws Exception {
         try {
-            final String dstDirPath = localBackupPath + File.separator + keyspaceName + File.separator + cfName
+            final String cfPath = localBackupPath + File.separator + keyspaceName + File.separator + cfName
                     + File.separator;
-            final File dstDir = new File(dstDirPath);
-            final boolean status = dstDir.mkdirs();
-            if (!status) {
-                final String errorMessage = "Failed creating directory for backup: " + backupName + ", dir path: "
-                        + dstDirPath;
-                LOGGER.error(errorMessage);
-                throw new Exception(errorMessage);
+            final File dstDir = new File(cfPath);
+            if (!dstDir.isDirectory()) {
+                final boolean status = dstDir.mkdirs();
+                if (!status) {
+                    final String errorMessage = "Failed creating directory for backup: " + backupName + ", dir path: "
+                            + cfPath;
+                    LOGGER.error(errorMessage);
+                    throw new Exception(errorMessage);
+                }
             }
 
-            FileUtils.copyDirectory(snapshotDirectory, dstDir);
+            //hard-link SSTables
+            for (File sstableFile : snapshotDirectory.listFiles()) {
+                final Path existingSSTablePath = Paths.get(sstableFile.getAbsolutePath());
+                final Path newSSTablePath = Paths.get(cfPath + File.separator + sstableFile.getName());
+                Files.createLink(newSSTablePath, existingSSTablePath);
+            }
         } catch (Exception e) {
             LOGGER.error("Error occurred on uploading directory {} : {}", snapshotDirectory.getName(), e);
             throw e;

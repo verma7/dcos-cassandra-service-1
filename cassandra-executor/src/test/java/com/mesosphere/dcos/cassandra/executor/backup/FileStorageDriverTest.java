@@ -24,7 +24,7 @@ public class FileStorageDriverTest {
     public void testGetLocalBkupPathShort() throws URISyntaxException {
         final String localPath = "/tmp/cassandraBackup";
         final BackupRestoreContext backupRestoreContext = BackupRestoreContext.create("node-id", "name",
-                "file://" + localPath, "local-location", "", "", false, "existing", Collections.emptyList(), 0.0f);
+                "file://" + localPath, "local-location", "", "", false, "existing", Collections.emptyList(), 0.0f, "");
 
         Assert.assertEquals(localPath + File.separator + backupRestoreContext.getName(),
                 fileStorageDriver.getLocalBackupPath(backupRestoreContext));
@@ -34,7 +34,7 @@ public class FileStorageDriverTest {
     public void testGetLocalBkupLong() throws URISyntaxException {
         final String localPath = "/tmp/cassandraBackup/a/b/c/d/e/f";
         final BackupRestoreContext backupRestoreContext = BackupRestoreContext.create("node-id", "name",
-                "file://" + localPath, "local-location", "", "", false, "existing", Collections.emptyList(), 0.0f);
+                "file://" + localPath, "local-location", "", "", false, "existing", Collections.emptyList(), 0.0f, "");
 
         Assert.assertEquals(localPath + File.separator + backupRestoreContext.getName(),
                 fileStorageDriver.getLocalBackupPath(backupRestoreContext));

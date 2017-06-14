@@ -196,7 +196,8 @@ public class BackupRestoreRequest implements ClusterTaskRequest {
         usesEmc(),
         getRestoreType(),
         getKeySpaces(),
-        getMinFreeSpacePercent());
+        getMinFreeSpacePercent(),
+        "");
   }
 
   private static boolean isAzure(String externalLocation) {

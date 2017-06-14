@@ -51,7 +51,9 @@ public class BackupRestoreContext implements ClusterTaskContext {
         @JsonProperty("key_spaces")
         final List<String> keyspaces,
         @JsonProperty("min_free_space_percent")
-        final float minFreeSpacePercent) {
+        final float minFreeSpacePercent,
+        @JsonProperty("persistent_volume_id")
+        final String persistentVolumeId) {
 
         return new BackupRestoreContext(
             nodeId,
@@ -63,7 +65,8 @@ public class BackupRestoreContext implements ClusterTaskContext {
             usesEmc,
             restoreType,
             keyspaces,
-            minFreeSpacePercent);
+            minFreeSpacePercent,
+            persistentVolumeId);
     }
 
     @JsonProperty("node_id")
@@ -96,6 +99,9 @@ public class BackupRestoreContext implements ClusterTaskContext {
     @JsonProperty("min_free_space_percent")
     private final float minFreeSpacePercent;
 
+    @JsonProperty("persistent_volume_id")
+    private final String persistentVolumeId;
+
     public BackupRestoreContext(final String nodeId,
                                 final String name,
                                 final String externalLocation,
@@ -105,7 +111,8 @@ public class BackupRestoreContext implements ClusterTaskContext {
                                 final boolean usesEmc,
                                 final String restoreType,
                                 final List<String> keySpaces,
-                                final float minFreeSpacePercent) {
+                                final float minFreeSpacePercent,
+                                final String persistentVolumeId) {
         this.nodeId = nodeId;
         this.externalLocation = externalLocation;
         this.name = name;
@@ -116,6 +123,7 @@ public class BackupRestoreContext implements ClusterTaskContext {
         this.restoreType = restoreType;
         this.keySpaces = keySpaces;
         this.minFreeSpacePercent = minFreeSpacePercent;
+        this.persistentVolumeId = persistentVolumeId;
     }
 
     /**
@@ -212,6 +220,16 @@ public class BackupRestoreContext implements ClusterTaskContext {
         return minFreeSpacePercent;
     }
 
+    /**
+     * Gets the persistent volume id of the node for the backup.
+     *
+     * @return The persistent volume id of the node for the backup in percentage.
+     */
+    @JsonProperty("persistent_volume_id")
+    public String getPersistentVolumeId() {
+        return persistentVolumeId;
+    }
+
     @Override
     public String toString() {
         return JsonUtils.toJsonString(this);
@@ -232,14 +250,15 @@ public class BackupRestoreContext implements ClusterTaskContext {
                 Objects.equals(getSecretKey(), that.getSecretKey()) &&
                 Objects.equals(getRestoreType(), that.getRestoreType()) &&
                 Objects.equals(getKeySpaces(), that.getKeySpaces()) &&
-                Objects.equals(getMinFreeSpacePercent(), that.getMinFreeSpacePercent());
+                Objects.equals(getMinFreeSpacePercent(), that.getMinFreeSpacePercent()) &&
+                Objects.equals(getPersistentVolumeId(), that.getPersistentVolumeId());
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(getNodeId(), getName(), getExternalLocation(),
                 getLocalLocation(), getAccountId(), getSecretKey(), getRestoreType(),
-                getKeySpaces(), getMinFreeSpacePercent());
+                getKeySpaces(), getMinFreeSpacePercent(), getPersistentVolumeId());
     }
 
     @JsonIgnore
@@ -254,7 +273,8 @@ public class BackupRestoreContext implements ClusterTaskContext {
             usesEmc,
             restoreType,
             keySpaces,
-            minFreeSpacePercent);
+            minFreeSpacePercent,
+            persistentVolumeId);
     }
 
     @JsonIgnore
@@ -269,6 +289,7 @@ public class BackupRestoreContext implements ClusterTaskContext {
             usesEmc,
             restoreType,
             keySpaces,
-            minFreeSpacePercent);
+            minFreeSpacePercent,
+            persistentVolumeId);
     }
 }

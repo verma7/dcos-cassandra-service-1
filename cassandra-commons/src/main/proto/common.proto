@@ -95,4 +95,6 @@ message CassandraData{
     optional string restoreType = 18;
 
     optional float minFreeSpacePercent = 19;
+
+    optional string persistentVolumeId = 20;
 }

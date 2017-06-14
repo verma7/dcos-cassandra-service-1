@@ -74,7 +74,8 @@ public class BackupUploadTask extends CassandraTask {
                 "",
                 context
                     .forNode(daemon.getName())
-                    .withLocalLocation(daemon.getVolumePath() + "/data"));
+                    .withLocalLocation(daemon.getVolumePath() + "/data"),
+                    daemon.getPersistentVolumeId());
 
         String name = nameForDaemon(daemon);
         Protos.TaskInfo completedTemplate = Protos.TaskInfo.newBuilder(template)

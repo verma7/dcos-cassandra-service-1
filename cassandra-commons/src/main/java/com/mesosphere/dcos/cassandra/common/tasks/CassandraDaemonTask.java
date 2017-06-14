@@ -256,6 +256,12 @@ public class CassandraDaemonTask extends CassandraTask {
                 .get(0);
     }
 
+    public String getPersistentVolumeId() {
+        return TaskUtils.getPersistentVolumeId(
+                getTaskInfo().getResourcesList())
+                .get(0);
+    }
+
     @Override
     public CassandraDaemonStatus createStatus(Protos.TaskState state,
                                               Optional<String> message) {

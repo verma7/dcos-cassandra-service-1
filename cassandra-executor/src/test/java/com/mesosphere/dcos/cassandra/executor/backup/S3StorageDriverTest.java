@@ -33,7 +33,8 @@ public class S3StorageDriverTest {
                 false,
                 "existing",
                 Collections.emptyList(),
-                0.0f);
+                0.0f,
+                "");
         Assert.assertEquals(bucketName, s3StorageDriver.getBucketName(backupRestoreContext));
     }
 
@@ -50,7 +51,8 @@ public class S3StorageDriverTest {
                 false,
                 "existing",
                 Collections.emptyList(),
-                0.0f);
+                0.0f,
+                "");
         Assert.assertEquals(bucketName, s3StorageDriver.getBucketName(backupRestoreContext));
     }
 
@@ -67,7 +69,8 @@ public class S3StorageDriverTest {
                 false,
                 "existing",
                 Collections.emptyList(),
-                0.0f);
+                0.0f,
+                "");
         Assert.assertEquals(bucketName, s3StorageDriver.getBucketName(backupRestoreContext));
     }
 
@@ -84,7 +87,8 @@ public class S3StorageDriverTest {
                 false,
                 "existing",
                 Collections.emptyList(),
-                0.0f);
+                0.0f,
+                "");
         Assert.assertEquals(backupName, s3StorageDriver.getPrefixKey(backupRestoreContext));
     }
 
@@ -102,7 +106,8 @@ public class S3StorageDriverTest {
                 false,
                 "existing",
                 Collections.emptyList(),
-                0.0f);
+                0.0f,
+                "");
         Assert.assertEquals(nestedPath + "/" + backupName, s3StorageDriver.getPrefixKey(backupRestoreContext));
     }
 
@@ -119,7 +124,8 @@ public class S3StorageDriverTest {
                 false,
                 "existing",
                 Collections.emptyList(),
-                0.0f);
+                0.0f,
+                "");
         Assert.assertEquals(backupName, s3StorageDriver.getPrefixKey(backupRestoreContext));
     }
 
@@ -137,7 +143,8 @@ public class S3StorageDriverTest {
                 false,
                 "existing",
                 Collections.emptyList(),
-                0.0f);
+                0.0f,
+                "");
         Assert.assertEquals(nestedPath + "/" + backupName, s3StorageDriver.getPrefixKey(backupRestoreContext));
     }
 
@@ -153,7 +160,8 @@ public class S3StorageDriverTest {
                 false,
                 "existing",
                 Collections.emptyList(),
-                0.0f);
+                0.0f,
+                "");
         Assert.assertEquals(Constants.S3_HOSTNAME, s3StorageDriver.getEndpoint(backupRestoreContext));
     }
 
@@ -170,7 +178,8 @@ public class S3StorageDriverTest {
                 false,
                 "existing",
                 Collections.emptyList(),
-                0.0f);
+                0.0f,
+                "");
         Assert.assertEquals(endpoint, s3StorageDriver.getEndpoint(backupRestoreContext));
     }
 
@@ -187,7 +196,8 @@ public class S3StorageDriverTest {
                 false,
                 "existing",
                 Collections.emptyList(),
-                0.0f);
+                0.0f,
+                "");
         Assert.assertEquals(endpoint, s3StorageDriver.getEndpoint(backupRestoreContext));
     }
 
@@ -204,7 +214,8 @@ public class S3StorageDriverTest {
                 false,
                 "existing",
                 Collections.emptyList(),
-                0.0f);
+                0.0f,
+                "");
         Assert.assertEquals(endpoint, s3StorageDriver.getEndpoint(backupRestoreContext));
     }
 }
