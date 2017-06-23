@@ -1,6 +1,7 @@
 package com.mesosphere.dcos.cassandra.scheduler.resources;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 import com.mesosphere.dcos.cassandra.common.tasks.ClusterTaskRequest;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupRestoreContext;
 import org.apache.commons.lang3.StringUtils;
@@ -41,6 +42,12 @@ public class BackupRestoreRequest implements ClusterTaskRequest {
 
   @JsonProperty("min_free_space_percent")
   private Float minFreeSpacePercent;
+
+  @JsonProperty("public_key_path")
+  private String publicKeyPath;
+
+  @JsonProperty("private_key_path")
+  private String privateKeyPath;
 
   public String getName() {
     return name;
@@ -117,6 +124,14 @@ public class BackupRestoreRequest implements ClusterTaskRequest {
   public void setMinFreeSpacePercent(Float minFreeSpacePercent) {
     this.minFreeSpacePercent = minFreeSpacePercent;
   }
+
+  public String getPublicKeyPath() { return !Strings.isNullOrEmpty(publicKeyPath) ? publicKeyPath : "/langley/current/cassandra-mesos/cassandra-mesos-backup-public-key/public.key"; }
+
+  public void setPublicKeyPath(String publicKeyPath) { this.publicKeyPath = publicKeyPath; }
+
+  public String getPrivateKeyPath() { return !Strings.isNullOrEmpty(privateKeyPath) ? privateKeyPath : "/langley/current/cassandra-mesos/cassandra-mesos-backup-private-key/private.key"; }
+
+  public void setPrivateKeyPath(String privateKeyPath) { this.privateKeyPath = privateKeyPath; }
 
   public boolean usesEmc() {
     if (usesEmc != null) {
@@ -197,7 +212,9 @@ public class BackupRestoreRequest implements ClusterTaskRequest {
         getRestoreType(),
         getKeySpaces(),
         getMinFreeSpacePercent(),
-        "");
+        "",
+        getPublicKeyPath(),
+        getPrivateKeyPath());
   }
 
   private static boolean isAzure(String externalLocation) {

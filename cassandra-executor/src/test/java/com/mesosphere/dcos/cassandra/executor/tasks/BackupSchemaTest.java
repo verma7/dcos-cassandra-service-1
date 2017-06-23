@@ -42,7 +42,7 @@ public class BackupSchemaTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
 
-        final BackupRestoreContext context = BackupRestoreContext.create("", "", "", "", "", "", false, "", Arrays.asList("keyspace1", "keyspace2", "keyspace3"), 0.0f, "");
+        final BackupRestoreContext context = BackupRestoreContext.create("", "", "", "", "", "", false, "", Arrays.asList("keyspace1", "keyspace2", "keyspace3"), 0.0f, "", "", "");
         when(backupSchemaTask.getBackupRestoreContext()).thenReturn(context);
         when(backupSchemaTask.createStatus(any(Protos.TaskState.class), any(Optional.class))).thenReturn(backupSchemaStatus);
         backupSchema = new BackupSchema(executorDriver, cassandraDaemonProcess, backupSchemaTask, backupStorageDriver);

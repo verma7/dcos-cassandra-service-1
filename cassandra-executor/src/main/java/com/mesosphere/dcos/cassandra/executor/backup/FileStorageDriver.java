@@ -17,27 +17,20 @@ package com.mesosphere.dcos.cassandra.executor.backup;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupRestoreContext;
-
+import com.mesosphere.dcos.cassandra.common.util.FileUtil;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.FilenameFilter;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.nio.file.Path;
 
 /**
  * Implements a BackupStorageDriver that provides upload and download
@@ -170,7 +163,7 @@ public class FileStorageDriver implements BackupStorageDriver {
              * backup on file system
              */
             if (localBackupDir.exists()) {
-                removeOldBackup(localBackupDir);
+                FileUtil.deleteDirectory(localBackupDir);
             }
 
             final boolean status = localBackupDir.mkdirs();

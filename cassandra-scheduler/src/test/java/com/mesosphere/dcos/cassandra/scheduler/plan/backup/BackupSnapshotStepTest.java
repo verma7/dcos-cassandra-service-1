@@ -53,7 +53,7 @@ public class BackupSnapshotStepTest {
     @Test
     public void testInitial() {
         Mockito.when(cassandraState.get("snapshot-node-0")).thenReturn(Optional.empty());
-        final BackupRestoreContext backupRestoreContext = BackupRestoreContext.create("", "", "", "", "", "", false, "", Collections.emptyList(), 0.0f, "");
+        final BackupRestoreContext backupRestoreContext = BackupRestoreContext.create("", "", "", "", "", "", false, "", Collections.emptyList(), 0.0f, "", "", "");
         final BackupSnapshotStep backupSnapshotStep =
                 new BackupSnapshotStep("node-0", cassandraState, provider, backupRestoreContext);
         Assert.assertEquals("snapshot-node-0", backupSnapshotStep.getName());
@@ -64,7 +64,7 @@ public class BackupSnapshotStepTest {
     @Test
     public void testInitialStateWithMultipleKeyspaces() {
         Mockito.when(cassandraState.get("snapshot-node-0")).thenReturn(Optional.empty());
-        final BackupRestoreContext backupRestoreContext = BackupRestoreContext.create("", "", "", "", "", "", false, "", TestUtils.keySpaces, 0.0f, "");
+        final BackupRestoreContext backupRestoreContext = BackupRestoreContext.create("", "", "", "", "", "", false, "", TestUtils.keySpaces, 0.0f, "", "", "");
         final BackupSnapshotStep backupSnapshotStep =
                 new BackupSnapshotStep("node-0", cassandraState, provider, backupRestoreContext);
         Assert.assertEquals("snapshot-node-0", backupSnapshotStep.getName());
@@ -79,7 +79,7 @@ public class BackupSnapshotStepTest {
         Mockito.when(mockCassandraTask.getState()).thenReturn(Protos.TaskState.TASK_FINISHED);
         Mockito.when(cassandraState.get("snapshot-node-0"))
                 .thenReturn(Optional.ofNullable(mockCassandraTask));
-        final BackupRestoreContext backupRestoreContext = BackupRestoreContext.create("", "", "", "", "", "", false, "", Collections.emptyList(), 0.0f, "");
+        final BackupRestoreContext backupRestoreContext = BackupRestoreContext.create("", "", "", "", "", "", false, "", Collections.emptyList(), 0.0f, "", "", "");
         final BackupSnapshotStep backupSnapshotStep =
                 new BackupSnapshotStep("node-0", cassandraState, provider, backupRestoreContext);
         Assert.assertEquals("snapshot-node-0", backupSnapshotStep.getName());
@@ -94,7 +94,7 @@ public class BackupSnapshotStepTest {
         final HashMap<String, CassandraDaemonTask> map = new HashMap<>();
         map.put("node-0", null);
         Mockito.when(cassandraState.getDaemons()).thenReturn(map);
-        final BackupRestoreContext backupRestoreContext = BackupRestoreContext.create("", "", "", "", "", "", false, "", Collections.emptyList(), 0.0f, "");
+        final BackupRestoreContext backupRestoreContext = BackupRestoreContext.create("", "", "", "", "", "", false, "", Collections.emptyList(), 0.0f, "", "", "");
 
         final BackupSnapshotTask snapshotTask = Mockito.mock(BackupSnapshotTask.class);
         Mockito.when(snapshotTask.getSlaveId()).thenReturn("1234");
@@ -117,7 +117,7 @@ public class BackupSnapshotStepTest {
         final HashMap<String, CassandraDaemonTask> map = new HashMap<>();
         map.put("node-0", daemonTask);
         Mockito.when(cassandraState.getDaemons()).thenReturn(map);
-        final BackupRestoreContext backupRestoreContext = BackupRestoreContext.create("", "", "", "", "", "", false, "", Collections.emptyList(), 0.0f, "");
+        final BackupRestoreContext backupRestoreContext = BackupRestoreContext.create("", "", "", "", "", "", false, "", Collections.emptyList(), 0.0f, "", "", "");
 
         final BackupSnapshotTask snapshotTask = Mockito.mock(BackupSnapshotTask.class);
         Mockito.when(snapshotTask.getSlaveId()).thenReturn("1234");
@@ -141,7 +141,7 @@ public class BackupSnapshotStepTest {
         final HashMap<String, CassandraDaemonTask> map = new HashMap<>();
         map.put("node-0", daemonTask);
         Mockito.when(cassandraState.getDaemons()).thenReturn(map);
-        final BackupRestoreContext backupRestoreContext = BackupRestoreContext.create("", "", "", "", "", "", false, "", Collections.emptyList(), 0.0f, "");
+        final BackupRestoreContext backupRestoreContext = BackupRestoreContext.create("", "", "", "", "", "", false, "", Collections.emptyList(), 0.0f, "", "", "");
 
         final BackupSnapshotTask snapshotTask = Mockito.mock(BackupSnapshotTask.class);
         Mockito.when(snapshotTask.getSlaveId()).thenReturn("1234");

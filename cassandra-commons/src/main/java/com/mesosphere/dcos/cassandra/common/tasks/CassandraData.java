@@ -95,6 +95,8 @@ public class CassandraData {
                 context.getRestoreType(),
                 context.getKeySpaces(),
                 context.getMinFreeSpacePercent(),
+                "",
+                "",
                 "");
     }
 
@@ -119,6 +121,8 @@ public class CassandraData {
                 context.getRestoreType(),
                 context.getKeySpaces(),
                 context.getMinFreeSpacePercent(),
+                "",
+                "",
                 "");
     }
 
@@ -143,7 +147,9 @@ public class CassandraData {
             context.getRestoreType(),
             context.getKeySpaces(),
             context.getMinFreeSpacePercent(),
-            persistentVolumeId);
+            persistentVolumeId,
+            context.getPublicKeyPath(),
+            context.getPrivateKeyPath());
     }
 
     public static final CassandraData createBackupUploadStatusData() {
@@ -166,6 +172,8 @@ public class CassandraData {
             context.getRestoreType(),
             context.getKeySpaces(),
             context.getMinFreeSpacePercent(),
+            "",
+            "",
             "");
     }
 
@@ -189,6 +197,8 @@ public class CassandraData {
             context.getRestoreType(),
             context.getKeySpaces(),
             context.getMinFreeSpacePercent(),
+            "",
+            "",
             "");
     }
 
@@ -212,6 +222,8 @@ public class CassandraData {
                 context.getRestoreType(),
                 context.getKeySpaces(),
                 context.getMinFreeSpacePercent(),
+                "",
+                "",
                 "");
     }
 
@@ -306,7 +318,9 @@ public class CassandraData {
                           final String restoreType,
                           final List<String> keySpaces,
                           final float minFreeSpacePercent,
-                          final String persistentVolumeId) {
+                          final String persistentVolumeId,
+                          final String publicKeyPath,
+                          final String privateKeyPath) {
 
         data = CassandraProtos.CassandraData.newBuilder()
             .setType(type.ordinal())
@@ -323,6 +337,8 @@ public class CassandraData {
             .addAllKeySpaces(keySpaces)
             .setMinFreeSpacePercent(minFreeSpacePercent)
             .setPersistentVolumeId(persistentVolumeId)
+            .setPublicKeyPath(publicKeyPath)
+            .setPrivateKeyPath(privateKeyPath)
             .build();
     }
 
@@ -439,7 +455,9 @@ public class CassandraData {
             data.getRestoreType(),
             data.getKeySpacesList(),
             data.getMinFreeSpacePercent(),
-            data.getPersistentVolumeId());
+            data.getPersistentVolumeId(),
+            data.getPublicKeyPath(),
+            data.getPrivateKeyPath());
     }
 
     public UpgradeSSTableContext getUpgradeSSTableContext() {

@@ -6,7 +6,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,7 +19,7 @@ import java.util.stream.Collectors;
  */
 public final class StorageUtil {
 
-  private static final Logger logger = LoggerFactory.getLogger(StorageUtil.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(StorageUtil.class);
   private static final Set<String> SKIP_KEYSPACES = ImmutableSet.of("system");
   private static final Map<String, List<String>> SKIP_COLUMN_FAMILIES = ImmutableMap.of();
   public static final Set<String> SKIP_SYSTEM_KEYSPACES = ImmutableSet.of("system", "system_distributed", "system_traces", "system_schema", "system_auth");
@@ -33,14 +35,14 @@ public final class StorageUtil {
 
     String ksName = ksDir.getName();
     if (SKIP_KEYSPACES.contains(ksName)) {
-      logger.debug("Skipping keyspace {}", ksName);
+      LOGGER.debug("Skipping keyspace {}", ksName);
       return false;
     }
 
     String cfName = cfDir.getName();
     if (SKIP_COLUMN_FAMILIES.containsKey(ksName)
       && SKIP_COLUMN_FAMILIES.get(ksName).contains(cfName)) {
-      logger.debug("Skipping column family: {}", cfName);
+      LOGGER.debug("Skipping column family: {}", cfName);
       return false;
     }
 
@@ -69,5 +71,17 @@ public final class StorageUtil {
     return keySpaces.stream()
             .filter(k -> !SKIP_SYSTEM_KEYSPACES.contains(k))
             .collect(Collectors.toList());
+  }
+
+  public static int triggerMaintananceProcess(List<String> command) throws Exception {
+    final ProcessBuilder processBuilder = new ProcessBuilder(command);
+    processBuilder.redirectErrorStream(true);
+    Process process = processBuilder.start();
+    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+    String line;
+    while ((line = reader.readLine()) != null) {
+      LOGGER.info(line);
+    }
+    return process.waitFor();
   }
 }

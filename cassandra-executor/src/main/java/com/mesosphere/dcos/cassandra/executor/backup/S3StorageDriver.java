@@ -21,9 +21,10 @@ import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.s3.internal.Constants;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.transfer.Download;
-import com.amazonaws.services.s3.transfer.MultipleFileUpload;
 import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.Upload;
 import com.mesosphere.dcos.cassandra.common.tasks.backup.BackupRestoreContext;
+import com.mesosphere.dcos.cassandra.common.util.FileUtil;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -141,9 +144,9 @@ public class S3StorageDriver implements BackupStorageDriver {
         LOGGER.info("Backup key: " + key);
         final TransferManager tx = getS3TransferManager(ctx);
         final File dataDirectory = new File(localLocation);
+        File encryptedSnapshotDirectory = null;
 
         try {
-
             List<File> keyspaces = Arrays.asList(dataDirectory.listFiles()).stream()
                 .filter(x -> !StorageUtil.SKIP_SYSTEM_KEYSPACES.contains(x.getName()))
                 .collect(Collectors.toList());
@@ -181,20 +184,46 @@ public class S3StorageDriver implements BackupStorageDriver {
                     LOGGER.info("Valid snapshot directory: {}",
                             snapshotDirectory.isPresent());
                     if (snapshotDirectory.isPresent()) {
-                        // Upload this directory
-                        LOGGER.info("Going to upload directory: {}",
-                                snapshotDirectory.get().getAbsolutePath());
+                        encryptedSnapshotDirectory = new File(backupDir.getAbsolutePath() + "-gpg");
+                        if (!encryptedSnapshotDirectory.mkdir()) {
+                            throw new Exception("unable to create snapshot encrypt directory");
+                        }
 
-                        uploadDirectory(
-                                tx,
-                                getBucketName(ctx),
-                                key,
-                                keyspaceDir.getName(),
-                                cfDir.getName(),
-                                snapshotDirectory.get());
+                        final List<String> importKey = Arrays.asList("gpg", "--import",
+                                ctx.getPublicKeyPath());
+                        LOGGER.info("Executing command: {}", importKey);
+                        if (StorageUtil.triggerMaintananceProcess(importKey) != 0) {
+                            throw new Exception("Import Public Key for encryption exited with non-zero code");
+                        }
+
+                        File[] snapshotFiles = snapshotDirectory.get().listFiles();
+                        if (snapshotFiles != null) {
+                            for (File snapshotFile : snapshotFiles) {
+                                Path encryptedFile = Paths.get(encryptedSnapshotDirectory.getAbsolutePath(),
+                                    snapshotFile.getName() + ".gpg");
+                                final List<String> encryptionCommand = Arrays.asList(
+                                    "gpg", "--output", encryptedFile.toString(),
+                                    "--trust-model", "always", "--batch",
+                                    "--yes", "--encrypt", "--recipient", "cassandra-mesos",
+                                    snapshotFile.getAbsolutePath());
+                                LOGGER.info("Executing command: {}", encryptionCommand);
+                                if (StorageUtil.triggerMaintananceProcess(encryptionCommand) != 0) {
+                                    throw new Exception("Encryption process exited with non-zero code");
+                                }
+                                LOGGER.info("Going to upload file: {}", encryptedFile.getFileName());
+                                uploadFile(
+                                        tx,
+                                        getBucketName(ctx),
+                                        key,
+                                        keyspaceDir.getName(),
+                                        cfDir.getName(),
+                                        encryptedFile);
+                                encryptedFile.toFile().delete();
+                            }
+                        }
+                        FileUtil.deleteDirectory(encryptedSnapshotDirectory);
                     } else {
-                        LOGGER.warn(
-                                "Snapshots directory: {} doesn't contain the current backup directory: {}",
+                        LOGGER.warn("Snapshots directory: {} doesn't contain the current backup directory: {}",
                                 snapshotDir.getName(), backupName);
                     }
                 }
@@ -202,24 +231,25 @@ public class S3StorageDriver implements BackupStorageDriver {
             LOGGER.info("Done uploading snapshots for backup: {}", backupName);
         } catch (Exception e) {
             LOGGER.info("Failed uploading snapshots for backup: {}, error: {}", backupName, e);
+            FileUtil.deleteDirectory(encryptedSnapshotDirectory);
             throw new Exception(e);
         } finally {
             tx.shutdownNow();
         }
     }
 
-    private void uploadDirectory(TransferManager tx,
-                                 String bucketName,
-                                 String key,
-                                 String keyspaceName,
-                                 String cfName,
-                                 File snapshotDirectory) throws Exception {
+    private void uploadFile(TransferManager tx,
+                            String bucketName,
+                            String key,
+                            String keyspaceName,
+                            String cfName,
+                            Path fileName) throws Exception {
         try {
             final String fileKey = key + "/" + keyspaceName + "/" + cfName + "/";
-            final MultipleFileUpload myUpload = tx.uploadDirectory(bucketName, fileKey, snapshotDirectory, true);
+            Upload myUpload = tx.upload(bucketName, fileKey, fileName.toFile());
             myUpload.waitForCompletion();
         } catch (Exception e) {
-            LOGGER.error("Error occurred on uploading directory {} : {}", snapshotDirectory.getName(), e);
+            LOGGER.error("Error occurred on uploading directory {} : {}", fileName.getFileName(), e);
             throw new Exception(e);
         }
     }
@@ -233,6 +263,8 @@ public class S3StorageDriver implements BackupStorageDriver {
 
         amazonS3Client.putObject(getBucketName(ctx), key, stream, new ObjectMetadata());
     }
+
+
 
     @Override
     public void download(BackupRestoreContext ctx) throws Exception {

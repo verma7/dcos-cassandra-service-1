@@ -53,7 +53,11 @@ public class BackupRestoreContext implements ClusterTaskContext {
         @JsonProperty("min_free_space_percent")
         final float minFreeSpacePercent,
         @JsonProperty("persistent_volume_id")
-        final String persistentVolumeId) {
+        final String persistentVolumeId,
+        @JsonProperty("public_key_path")
+        final String publicKeyPath,
+        @JsonProperty("private_key_path")
+        final String privateKeyPath) {
 
         return new BackupRestoreContext(
             nodeId,
@@ -66,7 +70,9 @@ public class BackupRestoreContext implements ClusterTaskContext {
             restoreType,
             keyspaces,
             minFreeSpacePercent,
-            persistentVolumeId);
+            persistentVolumeId,
+            publicKeyPath,
+            privateKeyPath);
     }
 
     @JsonProperty("node_id")
@@ -102,6 +108,12 @@ public class BackupRestoreContext implements ClusterTaskContext {
     @JsonProperty("persistent_volume_id")
     private final String persistentVolumeId;
 
+    @JsonProperty("public_key_path")
+    private final String publicKeyPath;
+
+    @JsonProperty("private_key_path")
+    private final String privateKeyPath;
+
     public BackupRestoreContext(final String nodeId,
                                 final String name,
                                 final String externalLocation,
@@ -112,7 +124,9 @@ public class BackupRestoreContext implements ClusterTaskContext {
                                 final String restoreType,
                                 final List<String> keySpaces,
                                 final float minFreeSpacePercent,
-                                final String persistentVolumeId) {
+                                final String persistentVolumeId,
+                                final String publicKeyPath,
+                                final String privateKeyPath) {
         this.nodeId = nodeId;
         this.externalLocation = externalLocation;
         this.name = name;
@@ -124,6 +138,8 @@ public class BackupRestoreContext implements ClusterTaskContext {
         this.keySpaces = keySpaces;
         this.minFreeSpacePercent = minFreeSpacePercent;
         this.persistentVolumeId = persistentVolumeId;
+        this.publicKeyPath = publicKeyPath;
+        this.privateKeyPath = privateKeyPath;
     }
 
     /**
@@ -230,6 +246,12 @@ public class BackupRestoreContext implements ClusterTaskContext {
         return persistentVolumeId;
     }
 
+    @JsonProperty("public_key_path")
+    public String getPublicKeyPath() {return publicKeyPath; }
+
+    @JsonProperty("private_key_path")
+    public String getPrivateKeyPath() { return privateKeyPath; }
+
     @Override
     public String toString() {
         return JsonUtils.toJsonString(this);
@@ -251,14 +273,17 @@ public class BackupRestoreContext implements ClusterTaskContext {
                 Objects.equals(getRestoreType(), that.getRestoreType()) &&
                 Objects.equals(getKeySpaces(), that.getKeySpaces()) &&
                 Objects.equals(getMinFreeSpacePercent(), that.getMinFreeSpacePercent()) &&
-                Objects.equals(getPersistentVolumeId(), that.getPersistentVolumeId());
+                Objects.equals(getPersistentVolumeId(), that.getPersistentVolumeId()) &&
+                Objects.equals(getPublicKeyPath(), that.getPublicKeyPath()) &&
+                Objects.equals(getPrivateKeyPath(), that.getPrivateKeyPath());
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(getNodeId(), getName(), getExternalLocation(),
                 getLocalLocation(), getAccountId(), getSecretKey(), getRestoreType(),
-                getKeySpaces(), getMinFreeSpacePercent(), getPersistentVolumeId());
+                getKeySpaces(), getMinFreeSpacePercent(), getPersistentVolumeId(),
+                getPublicKeyPath(), getPrivateKeyPath());
     }
 
     @JsonIgnore
@@ -274,7 +299,9 @@ public class BackupRestoreContext implements ClusterTaskContext {
             restoreType,
             keySpaces,
             minFreeSpacePercent,
-            persistentVolumeId);
+            persistentVolumeId,
+            publicKeyPath,
+            privateKeyPath);
     }
 
     @JsonIgnore
@@ -290,6 +317,8 @@ public class BackupRestoreContext implements ClusterTaskContext {
             restoreType,
             keySpaces,
             minFreeSpacePercent,
-            persistentVolumeId);
+            persistentVolumeId,
+            publicKeyPath,
+            privateKeyPath);
     }
 }
